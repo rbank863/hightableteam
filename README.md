@@ -1,6 +1,8 @@
 # The High Table Team
-Product Owner (PO) - Rock Bankole
-Scrum Master (SM) - Anthony Vo
-Front-end Developer - Mike Walker
-Back-End Developer - Steven Vo
-Database Developer - Manuel Garcia
+<ol>
+    <li>Product Owner (PO) - Rock Bankole</li>
+    <li>Scrum Master (SM) - Anthony Vo</li>
+    <li>Front-end Developer - Mike Walker</li>
+    <li>Back-End Developer - Steven Vo</li>
+    <li>Database Developer - Manuel Garcia</li>
+<ol>
