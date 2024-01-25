@@ -6,4 +6,4 @@
     <li>Front-end Developer - Mike Walker</li>
     <li>Back-End Developer - Steven Vo</li>
     <li>Database Developer - Manuel Garcia</li>
-<ol>
+</ul>
