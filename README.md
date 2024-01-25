@@ -1,4 +1,5 @@
 # The High Table Team
+##Members
 <ol>
     <li>Product Owner (PO) - Rock Bankole</li>
     <li>Scrum Master (SM) - Anthony Vo</li>
