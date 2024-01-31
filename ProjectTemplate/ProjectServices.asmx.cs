@@ -108,5 +108,14 @@ namespace ProjectTemplate
             return success;
         }
 
+        [WebMethod(EnableSession = true)]
+        public bool LogOff()
+        {
+            //if they log off, then we remove the session.  That way, if they access
+            //again later they have to log back on in order for their ID to be back
+            //in the session!
+            Session.Abandon();
+            return true;
+        }
     }
 }
