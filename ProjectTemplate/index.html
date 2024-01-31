@@ -10,10 +10,10 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
 	<!--YOUR OWN JAVASCRIPT CAN GO RIGHT HERE-->
-	<script type="text/javascript" src="index.js"></script>
+	<script type="text/javascript" src="./index.js"></script>
 
 	<!--AND YOUR OWN CSS CAN GO HERE AS WELL-->
-	<link rel="stylesheet" type="text/css" href="index.css">
+	<link rel="stylesheet" type="text/css" href="./styles.css" />
 
 </head>
 <body>
@@ -35,20 +35,21 @@
 		<div id="logonPanel" class="contentPanel logonPanel">
 			<div class="logonBox">
 				<form onsubmit="LogOn($('#logonId').val(), $('#logonPassword').val()); return false;">
-					<div class="left">Logon</div>
-					<div>
-						ID: <input type="text" id="logonId" />
+					<div id="header" class="left">Sign In</div>
+					<div class="left">
+						<label for="logonId">User Name:</label>
+						<input type="text" id="logonId" />
+					</div>
+					<div class="left">
+						<label for="logonPassword">Password:</label>
+						<input type="password" id="logonPassword" />
 					</div>
 					<div>
-						Pwd: <input type="password" id="logonPassword" />
-					</div>
-					<div>
-						<button type="submit">Go!</button>
+						<button type="submit">SIGN IN</button>
 					</div>
 				</form>
-
 			</div>
 		</div>
-	</div>
+
 </body>
 </html >
