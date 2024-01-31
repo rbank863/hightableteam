@@ -1,42 +1,54 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8" />
-	<title></title>
+	<title>The High Table</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+
 	<!--DO NOT FORGET THIS SCRIPT TAG SO YOU CAN USE JQUERY!!!!!-->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
 	<!--YOUR OWN JAVASCRIPT CAN GO RIGHT HERE-->
-	<script type="text/javascript" src="js/index.js"></script>
+	<script type="text/javascript" src="index.js"></script>
 
 	<!--AND YOUR OWN CSS CAN GO HERE AS WELL-->
-	<link rel="stylesheet" type="text/css" href="css/index.css">
+	<link rel="stylesheet" type="text/css" href="index.css">
 
-</head >
+</head>
 <body>
-	<!--Test button and connection to the database
-		<button onclick="javascript: TestButtonHandler();">Click here to test connection!</button>
-	-->
-
 	<div class="contentContainer">
+
+		<!--Test Database Connection Panel -->
+		<div id="testPanel" class="contentPanel testPanel">
+			<button onclick="javascript: TestButtonHandler();">Click here to test connection!</button>
+			<hr />
+		</div>
+
+		<!--Menu Panel -->
+		<div id="menuPanel" class="contentPanel menuPanel">
+			<button onclick="javascript: LogOff();">Log Off</button>
+			<hr />
+		</div>
+
+		<!--Logon Panel -->
 		<div id="logonPanel" class="contentPanel logonPanel">
 			<div class="logonBox">
 				<form onsubmit="LogOn($('#logonId').val(), $('#logonPassword').val()); return false;">
-					<div class="left">Sign In</div>
-					<hr />
+					<div class="left">Logon</div>
 					<div>
 						ID: <input type="text" id="logonId" />
 					</div>
 					<div>
 						Pwd: <input type="password" id="logonPassword" />
 					</div>
-					<hr />
 					<div>
 						<button type="submit">Go!</button>
 					</div>
 				</form>
+
 			</div>
 		</div>
 	</div>
 </body>
-	</html >
+</html >

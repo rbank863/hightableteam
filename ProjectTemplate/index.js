@@ -22,7 +22,7 @@ function TestButtonHandler() {
 }
 function LogOn(userId, pass) {
 	//the url of the webservice we will be talking to
-	var webMethod = "AccountServices.asmx/LogOn";
+	var webMethod = "ProjectServices.asmx/LogOn";
 	//the parameters we will pass the service (in json format because curly braces)
 	//note we encode the values for transmission over the web.  All the \'s are just
 	//because we want to wrap our keynames and values in double quotes so we have to
@@ -53,12 +53,12 @@ function LogOn(userId, pass) {
 				//server replied true, so show the accounts panel
 				//showPanel('accountsPanel');
 				//LoadAccounts();
-				alert("You logged on!");
+				alert("logon good");
 			}
 			else {
 				//server replied false, so let the user know
 				//the logon failed
-				alert("logon failed");
+				alert("logon bad");
 			}
 		},
 		error: function (e) {
@@ -67,6 +67,33 @@ function LogOn(userId, pass) {
 			//then this function mapped to the error key is executed rather
 			//than the one mapped to the success key.  This is just a garbage
 			//alert becaue I'm lazy
+			alert("boo...");
+		}
+	});
+}
+
+//logs the user off both at the client and at the server
+function LogOff() {
+
+	var webMethod = "ProjectServices.asmx/LogOff";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			if (msg.d) {
+				//we logged off, so go back to logon page,
+				//stop checking messages
+				//and clear the chat panel
+				alert("Goodbye!");
+				//showPanel('logonPanel');
+				//HideMenu();
+			}
+			else {
+			}
+		},
+		error: function (e) {
 			alert("boo...");
 		}
 	});

@@ -73,7 +73,7 @@ namespace ProjectTemplate
 			string sqlConnectString = getConString();
             //here's our query.  A basic select with nothing fancy.  Note the parameters that begin with @
             //NOTICE: we added admin to what we pull, so that we can store it along with the id in the session
-            string sqlSelect = "SELECT id FROM users WHERE userid=@idValue and pass=@passValue";
+            string sqlSelect = "SELECT id FROM Users WHERE userid=@idValue and pass=@passValue";
 
             //set up our connection object to be ready to use our connection string
             MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
