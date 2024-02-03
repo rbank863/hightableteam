@@ -74,7 +74,7 @@ namespace ProjectTemplate
 			string sqlConnectString = getConString();
             //here's our query.  A basic select with nothing fancy.  Note the parameters that begin with @
             //NOTICE: we added admin to what we pull, so that we can store it along with the id in the session
-            string sqlSelect = "SELECT id FROM Users WHERE userid=@idValue and pass=@passValue";
+            string sqlSelect = "SELECT UserID, Admin FROM Users WHERE LoginID=@idValue and LoginPass=@passValue";
 
             //set up our connection object to be ready to use our connection string
             MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
@@ -101,8 +101,8 @@ namespace ProjectTemplate
                 //if we found an account, store the id and admin status in the session
                 //so we can check those values later on other method calls to see if they 
                 //are 1) logged in at all, and 2) and admin or not
-                Session["id"] = sqlDt.Rows[0]["id"];
-                //Session["admin"] = sqlDt.Rows[0]["admin"];
+                Session["UserID"] = sqlDt.Rows[0]["UserID"];
+                Session["Admin"] = sqlDt.Rows[0]["Admin"];
                 success = true;
             }
             //return the result!
@@ -120,15 +120,15 @@ namespace ProjectTemplate
         }
 
         [WebMethod(EnableSession = true)]
-        public void NewAccount(string uid, string pass, string fName, string lName, string dept)
+        public void NewAccount(string uid, string pass, string fName, string lName, string dept, string admin)
         {
             string sqlConnectString = getConString();
             //this query inserts into Employees and Users table in database with appropriate values. 
             //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
             //does is tell mySql server to return the primary key of the last inserted row.
-            string sqlSelect = "insert into Employees (fName, lName, dept) " +
-                "values(@fnameValue, @lnameValue, @deptValue); insert into Users (userid, pass, empid) " +
-                "values(@idValue, @passValue, (SELECT empID from Employees WHERE fName=@fnameValue AND lName=@lnameValue)); " +
+            string sqlSelect = "insert into Employees (EmpFName, EmpLName, Dept) " +
+                "values(@fnameValue, @lnameValue, @deptValue); insert into Users (LoginID, LoginPass, EmpID, Admin) " +
+                "values(@idValue, @passValue, (SELECT EmpID from Employees WHERE EmpFName=@fnameValue AND EmpLName=@lnameValue), @adminValue); " +
                 "SELECT LAST_INSERT_ID();";
 
             MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
@@ -139,6 +139,7 @@ namespace ProjectTemplate
             sqlCommand.Parameters.AddWithValue("@fnameValue", HttpUtility.UrlDecode(fName));
             sqlCommand.Parameters.AddWithValue("@lnameValue", HttpUtility.UrlDecode(lName));
             sqlCommand.Parameters.AddWithValue("@deptValue", HttpUtility.UrlDecode(dept));
+            sqlCommand.Parameters.AddWithValue("@adminValue", HttpUtility.UrlDecode(admin));
 
             //this time, we're not using a data adapter to fill a data table.  We're just
             //opening the connection, telling our command to "executescalar" which says basically
@@ -164,11 +165,11 @@ namespace ProjectTemplate
         [WebMethod(EnableSession = true)]
         public void DeleteAccount(string id)
         {
-            if (Convert.ToInt32(Session["admin"]) == 1)
+            if (Convert.ToInt32(Session["Admin"]) == 1)
             {
                 string sqlConnectString = getConString();
                 //this is a simple update, with parameters to pass in values
-                string sqlSelect = "delete from Employees where id=@idValue";
+                string sqlSelect = "delete from Employees where EmpID=@idValue";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
