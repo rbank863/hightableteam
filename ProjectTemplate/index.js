@@ -1,6 +1,45 @@
 "use strict";
 
-function TestButtonHandler() {
+$(document).ready(function () {
+	showPanel("logonPanel")
+});
+
+var contentPanels = ['logonPanel', 'suggestionPanel'];
+
+function showPanel(panelId) {
+	// Iterate through all content panels
+	for (var i = 0; i < contentPanels.length; i++) {
+		if (panelId == contentPanels[i]) {
+			$("#" + contentPanels[i]).css("display", "block"); // Show the selected panel
+		} else {
+			$("#" + contentPanels[i]).css("display", "none"); // Hide other panels
+		}
+	}
+}
+
+
+
+//this function clears data from all panels
+function clearData() {
+	clearLogon();
+	clearNewSuggestion();
+}
+
+//resets login inputs
+function clearLogon() {
+	$('#logonId, #logonPassword').val("");
+}
+
+//resets new suggestion inputs
+function clearNewSuggestion() {
+	$('#summary, #otherText, #benefitExplanation').val('');
+	$('#anonymousYes, #anonymousNo').prop('checked', false);
+	$('#productivity, #methods, #service, #revenue, #costs, #other').prop('checked', false);
+}
+
+
+
+function testButtonHandler() {
 	var webMethod = "ProjectServices.asmx/TestConnection";
 	var parameters = "{}";
 
@@ -20,7 +59,7 @@ function TestButtonHandler() {
 		}
 	})
 }
-function LogOn(userId, pass) {
+function logOn(userId, pass) {
 	//the url of the webservice we will be talking to
 	var webMethod = "ProjectServices.asmx/LogOn";
 	//the parameters we will pass the service (in json format because curly braces)
@@ -50,15 +89,15 @@ function LogOn(userId, pass) {
 			//to a generic property of the server response called d (I assume short for data
 			//but honestly I don't know...)
 			if (msg.d) {
-				//server replied true, so show the accounts panel
-				//showPanel('accountsPanel');
+				showMenu();
+				showPanel('suggestionPanel');
 				//LoadAccounts();
-				alert("logon good");
+				alert("Log on successeful!");
 			}
 			else {
 				//server replied false, so let the user know
 				//the logon failed
-				alert("logon bad");
+				alert("Log on failed.");
 			}
 		},
 		error: function (e) {
@@ -72,8 +111,61 @@ function LogOn(userId, pass) {
 	});
 }
 
+function submitSuggestion(anonymous, summary, benefitExplanation) {
+	// The URL of the web service for submitting suggestions
+	var webMethod = "ProjectServices.asmx/NewSuggestion";
+
+	// Collect selected suggestion types in an array
+	var suggestionTypes = [];
+	$('input[name="suggestionType"]:checked').each(function () {
+		var suggestionType = $(this).val();
+		suggestionTypes.push(suggestionType);
+	});
+
+	// Encode the variables before sending
+	var encodedAnonymous = encodeURI(anonymous);
+	var encodedSummary = encodeURI(summary);
+	var encodedBenefitExplanation = encodeURI(benefitExplanation);
+
+	// Create a data object with the suggestion data
+	var data = {
+		anonymous: encodedAnonymous,
+		summary: encodedSummary,
+		suggestionTypes: suggestionTypes,
+		benefitExplanation: encodedBenefitExplanation
+	};
+
+	// jQuery ajax method for submitting suggestions
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		data: JSON.stringify(data),
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			// Handle success, e.g., show a success message to the user
+			alert("Suggestion submitted successfully!");
+			clearSuggestionPanelData();
+		},
+		error: function (e) {
+			// Handle error, e.g., display an error message
+			alert("Failed to submit suggestion. Please try again.");
+		}
+	});
+}
+
+function showMenu() {
+	$("#menu").css("display", "flex"); // Adjust to "flex" to maintain the flex container properties
+}
+
+function hideMenu() {
+
+	$("#menu").css("display", "none"); // Adjust to "flex" to maintain the flex container properties
+}
+
+
 //logs the user off both at the client and at the server
-function LogOff() {
+function logOff() {
 
 	var webMethod = "ProjectServices.asmx/LogOff";
 	$.ajax({
@@ -86,9 +178,9 @@ function LogOff() {
 				//we logged off, so go back to logon page,
 				//stop checking messages
 				//and clear the chat panel
-				alert("Goodbye!");
-				//showPanel('logonPanel');
-				//HideMenu();
+				hideMenu();
+				clearData();
+				showPanel('logonPanel');
 			}
 			else {
 			}

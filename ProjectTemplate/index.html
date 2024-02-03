@@ -17,32 +17,38 @@
 
 </head>
 <body>
+
+	<div class="titleContainer">
+		<div id="menu" class="menu">
+			<button id="button1">Button 1</button>
+			<button id="button2">Button 2</button>
+			<button id="button3">Button 3</button>
+			<button onclick="javascript: logOff();">Log Off</button>
+			<hr />
+		</div>
+	</div>
+
 	<div class="contentContainer">
 
-		<!--Test Database Connection Panel -->
+		<!--Test Database Connection Panel
 		<div id="testPanel" class="contentPanel testPanel">
-			<button onclick="javascript: TestButtonHandler();">Click here to test connection!</button>
+			<button onclick="javascript: testButtonHandler();">Click here to test connection!</button>
 			<hr />
 		</div>
-
-		<!--Menu Panel -->
-		<div id="menuPanel" class="contentPanel menuPanel">
-			<button onclick="javascript: LogOff();">Log Off</button>
-			<hr />
-		</div>
+		-->
 
 		<!--Logon Panel -->
 		<div id="logonPanel" class="contentPanel logonPanel">
 			<div class="logonBox">
-				<form onsubmit="LogOn($('#logonId').val(), $('#logonPassword').val()); return false;">
+				<form onsubmit="logOn($('#logonId').val(), $('#logonPassword').val()); return false;">
 					<div id="header" class="left">Sign In</div>
 					<div class="left">
 						<label for="logonId">User Name:</label>
-						<input type="text" id="logonId" />
+						<input type="text" id="logonId" required />
 					</div>
 					<div class="left">
 						<label for="logonPassword">Password:</label>
-						<input type="password" id="logonPassword" />
+						<input type="password" id="logonPassword" required/>
 					</div>
 					<div>
 						<button type="submit">SIGN IN</button>
@@ -51,5 +57,63 @@
 			</div>
 		</div>
 
+		<!--Suggestion Panel -->
+		<div id="suggestionPanel" class="contentPanel suggestionPanel">
+			<div class="suggestionBox">
+				<form onsubmit="submitSuggestion(); return false;">
+					<div id="header" class="form-header">Employee Suggestion Form</div>
+
+					<div class="form-group">
+						<label>Do you wish to remain anonymous?</label>
+						<div>
+							<input type="radio" id="anonymousYes" name="anonymous" value="true" />
+							<label for="anonymousYes">Yes</label>
+							<input type="radio" id="anonymousNo" name="anonymous" value="false" />
+							<label for="anonymousNo">No</label>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label for="summary">Please provide a brief summary of your idea:</label>
+						<textarea id="summary" name="summary" required></textarea>
+					</div>
+
+					<div class="form-group">
+						<label>I believe this suggestion will: (check all that apply)</label>
+						<div>
+							<input type="checkbox" id="productivity" name="suggestionType" value="productivity" />
+							<label for="productivity">Improve Productivity/Quality</label>
+						</div>
+						<div>
+							<input type="checkbox" id="methods" name="suggestionType" value="methods" />
+							<label for="methods">Improve Methods/Procedures</label>
+						</div>
+						<div>
+							<input type="checkbox" id="service" name="suggestionType" value="service" />
+							<label for="service">Improve Customer Service</label>
+						</div>
+						<div>
+							<input type="checkbox" id="revenue" name="suggestionType" value="revenue" />
+							<label for="revenue">Increase Revenue</label>
+						</div>
+						<div>
+							<input type="checkbox" id="costs" name="suggestionType" value="costs" />
+							<label for="costs">Save Costs</label>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label for="benefitExplanation">Explain how your idea will benefit our organization:</label>
+						<textarea id="benefitExplanation" name="benefitExplanation" required></textarea>
+					</div>
+
+					<div class="form-group">
+						<button type="submit">Submit Suggestion</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+	</div>
 </body>
 </html >
