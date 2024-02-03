@@ -111,31 +111,32 @@ function logOn(userId, pass) {
 	});
 }
 
-function submitSuggestion(anonymous, summary, benefitExplanation) {
+function submitSuggestion() {
 	// The URL of the web service for submitting suggestions
 	var webMethod = "ProjectServices.asmx/NewSuggestion";
 
-	// Collect selected suggestion types in an array
+	// Collect field values
+	var encodedAnonymous = $('input[name="anonymous"]:checked').val();
+	var encodedSummary = $('#summary').val();
+	var encodedBenefitExplanation = $('#benefitExplanation').val();
+
+	// Collect selected suggestion types in an array and encode each
 	var suggestionTypes = [];
 	$('input[name="suggestionType"]:checked').each(function () {
-		var suggestionType = $(this).val();
+		var suggestionType = encodeURI($(this).val());
 		suggestionTypes.push(suggestionType);
 	});
 
-	// Encode the variables before sending
-	var encodedAnonymous = encodeURI(anonymous);
-	var encodedSummary = encodeURI(summary);
-	var encodedBenefitExplanation = encodeURI(benefitExplanation);
-
 	// Create a data object with the suggestion data
-	var data = {
+	var data = JSON.stringify({
 		anonymous: encodedAnonymous,
 		summary: encodedSummary,
 		suggestionTypes: suggestionTypes,
 		benefitExplanation: encodedBenefitExplanation
-	};
+	});
 
-	// jQuery ajax method for submitting suggestions
+	console.log(data);
+
 	$.ajax({
 		type: "POST",
 		url: webMethod,
