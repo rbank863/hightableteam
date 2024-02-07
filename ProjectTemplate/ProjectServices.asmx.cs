@@ -190,7 +190,7 @@ namespace ProjectTemplate
         }
 
         [WebMethod(EnableSession = true)]
-        public void NewSuggestion(string post, string proposedSolution, string suggestionTypes, string anon)
+        public void NewSuggestion(string post, string proposedSolution, string anon, string checkboxData)
         {
             //convert stored Session EmpID to an integer
             int empId = Convert.ToInt32(Session["EmpID"]);
@@ -198,11 +198,9 @@ namespace ProjectTemplate
             string sqlConnectString = getConString();
             //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
             //does is tell mySql server to return the primary key of the last inserted row.
-            string sqlSelect = "insert into Posts (EmpID, Post, ProposedSolution, Date, Anon) " +
-                "values(@empIdValue, @postValue, @proposedSolutionValue, CURRENT_TIMESTAMP, @anonValue); " +
-                "set @last_id_in_Posts = LAST_INSERT_ID(); " +
-                "insert into Posts_Checkbox_Values (PostID, BoxID, CheckboxValue) " +
-                "values(@last_id_in_Posts, @boxIdValue, @checkboxValue);";
+            string sqlSelect = "insert into Posts (EmpID, Post, ProposedSolution, Date, Anon, CheckboxData) " +
+                "values(@empIdValue, @postValue, @proposedSolutionValue, CURRENT_TIMESTAMP, @anonValue, @checkboxDataValue); " +
+                "SELECT LAST_INSERT_ID();";
 
             MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
             MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
@@ -210,8 +208,8 @@ namespace ProjectTemplate
             sqlCommand.Parameters.AddWithValue("@empIdValue", empId);
             sqlCommand.Parameters.AddWithValue("@postValue", HttpUtility.UrlDecode(post));
             sqlCommand.Parameters.AddWithValue("@proposedSolutionValue", HttpUtility.UrlDecode(proposedSolution));
-            //sqlCommand.Parameters.AddWithValue("@dateValue", HttpUtility.UrlDecode(date));
             sqlCommand.Parameters.AddWithValue("@anonValue", HttpUtility.UrlDecode(anon));
+            sqlCommand.Parameters.AddWithValue("@checkboxDataValue", HttpUtility.UrlDecode(checkboxData));
 
             //this time, we're not using a data adapter to fill a data table.  We're just
             //opening the connection, telling our command to "executescalar" which says basically
