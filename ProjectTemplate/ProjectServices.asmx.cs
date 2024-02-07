@@ -74,7 +74,7 @@ namespace ProjectTemplate
 			string sqlConnectString = getConString();
             //here's our query.  A basic select with nothing fancy.  Note the parameters that begin with @
             //NOTICE: we added admin to what we pull, so that we can store it along with the id in the session
-            string sqlSelect = "SELECT UserID, Admin FROM Users WHERE LoginID=@idValue and LoginPass=@passValue";
+            string sqlSelect = "SELECT UserID, Admin, EmpID FROM Users WHERE LoginID=@idValue and LoginPass=@passValue";
 
             //set up our connection object to be ready to use our connection string
             MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
@@ -98,11 +98,12 @@ namespace ProjectTemplate
             //a legit account
             if (sqlDt.Rows.Count > 0)
             {
-                //if we found an account, store the id and admin status in the session
+                //if we found an account, store the id, admin status, and empId in the session
                 //so we can check those values later on other method calls to see if they 
-                //are 1) logged in at all, and 2) and admin or not
+                //are 1) logged in at all, 2) admin or not, and 3) what their empId is
                 Session["UserID"] = sqlDt.Rows[0]["UserID"];
                 Session["Admin"] = sqlDt.Rows[0]["Admin"];
+                Session["EmpID"] = sqlDt.Rows[0]["EmpID"];
                 success = true;
             }
             //return the result!
@@ -186,6 +187,51 @@ namespace ProjectTemplate
                 }
                 sqlConnection.Close();
             }
+        }
+
+        [WebMethod(EnableSession = true)]
+        public void NewSuggestion(string post, string proposedSolution, string suggestionTypes, string anon)
+        {
+            //convert stored Session EmpID to an integer
+            int empId = Convert.ToInt32(Session["EmpID"]);
+
+            string sqlConnectString = getConString();
+            //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
+            //does is tell mySql server to return the primary key of the last inserted row.
+            string sqlSelect = "insert into Posts (EmpID, Post, ProposedSolution, Date, Anon) " +
+                "values(@empIdValue, @postValue, @proposedSolutionValue, CURRENT_TIMESTAMP, @anonValue); " +
+                "set @last_id_in_Posts = LAST_INSERT_ID(); " +
+                "insert into Posts_Checkbox_Values (PostID, BoxID, CheckboxValue) " +
+                "values(@last_id_in_Posts, @boxIdValue, @checkboxValue);";
+
+            MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+            MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+            sqlCommand.Parameters.AddWithValue("@empIdValue", empId);
+            sqlCommand.Parameters.AddWithValue("@postValue", HttpUtility.UrlDecode(post));
+            sqlCommand.Parameters.AddWithValue("@proposedSolutionValue", HttpUtility.UrlDecode(proposedSolution));
+            //sqlCommand.Parameters.AddWithValue("@dateValue", HttpUtility.UrlDecode(date));
+            sqlCommand.Parameters.AddWithValue("@anonValue", HttpUtility.UrlDecode(anon));
+
+            //this time, we're not using a data adapter to fill a data table.  We're just
+            //opening the connection, telling our command to "executescalar" which says basically
+            //execute the query and just hand me back the number the query returns (the ID, remember?).
+            //don't forget to close the connection!
+            sqlConnection.Open();
+            //we're using a try/catch so that if the query errors out we can handle it gracefully
+            //by closing the connection and moving on
+            try
+            {
+                int accountID = Convert.ToInt32(sqlCommand.ExecuteScalar());
+                //here, you could use this accountID for additional queries regarding
+                //the requested account.  Really this is just an example to show you
+                //a query where you get the primary key of the inserted row back from
+                //the database!
+            }
+            catch (Exception e)
+            {
+            }
+            sqlConnection.Close();
         }
     }
 }
