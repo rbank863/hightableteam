@@ -116,9 +116,9 @@ function submitSuggestion() {
 	var webMethod = "ProjectServices.asmx/NewSuggestion";
 
 	// Collect field values
-	var encodedAnonymous = $('input[name="anonymous"]:checked').val();
-	var encodedSummary = $('#summary').val();
-	var encodedBenefitExplanation = $('#benefitExplanation').val();
+	var anonymous = $('input[name="anonymous"]:checked').val();
+	var summary = $('#summary').val();
+	var benefitExplanation = $('#benefitExplanation').val();
 
 	// Collect selected suggestion types in an array and encode each
 	var suggestionTypes = [];
@@ -127,26 +127,19 @@ function submitSuggestion() {
 		suggestionTypes.push(suggestionType);
 	});
 
-	// Create a data object with the suggestion data
-	var data = JSON.stringify({
-		anonymous: encodedAnonymous,
-		summary: encodedSummary,
-		suggestionTypes: suggestionTypes,
-		benefitExplanation: encodedBenefitExplanation
-	});
-
-	console.log(data);
+	var parameters = "{\"post\":\"" + encodeURI(summary) + "\",\"proposedSolution\":\"" + encodeURI(benefitExplanation) + "\",\"anon\":\"" + encodeURI(anonymous) + "\",\"checkboxData\":\"" + encodeURI(suggestionTypes) + "\"}";
+	console.log(parameters);
 
 	$.ajax({
 		type: "POST",
 		url: webMethod,
-		data: JSON.stringify(data),
+		data: parameters,
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
 		success: function (msg) {
 			// Handle success, e.g., show a success message to the user
 			alert("Suggestion submitted successfully!");
-			clearSuggestionPanelData();
+			clearNewSuggestion();
 		},
 		error: function (e) {
 			// Handle error, e.g., display an error message
