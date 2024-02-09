@@ -7,6 +7,7 @@ using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Data;
 using System.Web.UI.WebControls;
+using System.Security.Principal;
 
 namespace ProjectTemplate
 {
@@ -231,5 +232,75 @@ namespace ProjectTemplate
             }
             sqlConnection.Close();
         }
+
+        [WebMethod(EnableSession = true)]
+        public Suggestion[] GetSuggestions()
+        {
+            //check out the return type.  It's an array of Suggestion objects.  You can look at our custom Suggestion class in this solution to see that it's 
+            //just a container for public class-level variables.  It's a simple container that asp.net will have no trouble converting into json.  When we return
+            //sets of information, it's a good idea to create a custom container class to represent instances (or rows) of that information, and then return an array of those objects.  
+            //Keeps everything simple.
+
+            //WE ONLY SHARE ACCOUNTS WITH LOGGED IN USERS!
+            if (Session["UserID"] != null)
+            {
+                DataTable sqlDt = new DataTable("suggestions");
+
+                string sqlConnectString = getConString();
+                string sqlSelect = "select PostID, EmpID, Post, ProposedSolution, Date, Likes, Anon, CheckboxData from Posts order by Date";
+
+                MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+                MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+                //gonna use this to fill a data table
+                MySqlDataAdapter sqlDa = new MySqlDataAdapter(sqlCommand);
+                //filling the data table
+                sqlDa.Fill(sqlDt);
+
+                //loop through each row in the dataset, creating instances
+                //of our container class Account.  Fill each acciount with
+                //data from the rows, then dump them in a list.
+                List<Suggestion> suggestions = new List<Suggestion>();
+                for (int i = 0; i < sqlDt.Rows.Count; i++)
+                {
+                    //only share user id and pass info with admins!
+                    if (Convert.ToInt32(Session["Admin"]) == 1)
+                    {
+                        suggestions.Add(new Suggestion
+                        {
+                            postId = Convert.ToInt32(sqlDt.Rows[i]["PostID"]),
+                            empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
+                            post = sqlDt.Rows[i]["Post"].ToString(),
+                            proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
+                            date = sqlDt.Rows[i]["Date"].ToString(),
+                            likes = sqlDt.Rows[i]["Likes"].ToString(),
+                            anon = sqlDt.Rows[i]["Anon"].ToString(),
+                            checkboxData = sqlDt.Rows[i]["CheckboxData"].ToString()
+                        });
+                    }
+                    else
+                    {
+                        suggestions.Add(new Suggestion
+                        {
+                            postId = Convert.ToInt32(sqlDt.Rows[i]["PostID"]),
+                            post = sqlDt.Rows[i]["Post"].ToString(),
+                            proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
+                            date = sqlDt.Rows[i]["Date"].ToString(),
+                            likes = sqlDt.Rows[i]["Likes"].ToString(),
+                            anon = sqlDt.Rows[i]["Anon"].ToString(),
+                            checkboxData = sqlDt.Rows[i]["CheckboxData"].ToString()
+                        });
+                    }
+                }
+                //convert the list of suggestions to an array and return!
+                return suggestions.ToArray();
+            }
+            else
+            {
+                //if they're not logged in, return an empty array
+                return new Suggestion[0];
+            }
+        }
+
     }
 }
