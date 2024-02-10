@@ -23,7 +23,7 @@ html, body {
 
     .menu button {
         margin-left: 10px;
-        width: 100px;
+        height: 55px;
     }
 
 .contentContainer {
@@ -75,3 +75,17 @@ button {
     button:hover {
         background-color: #0056b3;
     }
+
+.suggestionDisplayPanel {
+    margin-top: 20px;
+}
+
+.suggestionDisplayBox {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.suggestionDetail {
+    margin-bottom: 5px;
+}

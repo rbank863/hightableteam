@@ -1,10 +1,12 @@
 "use strict";
 
+var allSuggestions = []; // Global array to store suggestions
+
 $(document).ready(function () {
 	showPanel("logonPanel")
 });
 
-var contentPanels = ['logonPanel', 'suggestionPanel'];
+var contentPanels = ['logonPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel'];
 
 function showPanel(panelId) {
 	// Iterate through all content panels
@@ -23,6 +25,7 @@ function showPanel(panelId) {
 function clearData() {
 	clearLogon();
 	clearNewSuggestion();
+	clearSuggestionPannels();
 }
 
 //resets login inputs
@@ -33,8 +36,14 @@ function clearLogon() {
 //resets new suggestion inputs
 function clearNewSuggestion() {
 	$('#summary, #otherText, #benefitExplanation').val('');
-	$('#anonymousYes, #anonymousNo').prop('checked', false);
-	$('#productivity, #methods, #service, #revenue, #costs, #other').prop('checked', false);
+	$('#anonymousYes').prop('checked', false);
+	$('#anonymousNo').prop('checked', true);
+	$('#productivity, #methods, #service, #revenue, #costs, #personnel').prop('checked', false);
+}
+
+function clearSuggestionPannels() {
+	$("#suggestionsContainer").empty();
+	$("#suggestionDetails").empty();
 }
 
 
@@ -90,8 +99,8 @@ function logOn(userId, pass) {
 			//but honestly I don't know...)
 			if (msg.d) {
 				showMenu();
-				showPanel('suggestionPanel');
 				loadSuggestions()
+				showPanel('suggestionDisplayPanel');
 			}
 			else {
 				//server replied false, so let the user know
@@ -136,8 +145,6 @@ function submitSuggestion() {
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
 		success: function (msg) {
-			// Handle success, e.g., show a success message to the user
-			alert("Suggestion submitted successfully!");
 			clearNewSuggestion();
 		},
 		error: function (e) {
@@ -148,12 +155,12 @@ function submitSuggestion() {
 }
 
 function showMenu() {
-	$("#menu").css("display", "flex"); // Adjust to "flex" to maintain the flex container properties
+	$("#menu").css("display", "flex");
 }
 
 function hideMenu() {
 
-	$("#menu").css("display", "none"); // Adjust to "flex" to maintain the flex container properties
+	$("#menu").css("display", "none");
 }
 
 
@@ -168,9 +175,7 @@ function logOff() {
 		dataType: "json",
 		success: function (msg) {
 			if (msg.d) {
-				//we logged off, so go back to logon page,
-				//stop checking messages
-				//and clear the chat panel
+				// Close the menu, clear all data in case user logs back in, and display the logonPanel
 				hideMenu();
 				clearData();
 				showPanel('logonPanel');
@@ -184,7 +189,7 @@ function logOff() {
 	});
 }
 
-//logs the user off both at the client and at the server
+// This function will load all suggestion posts from the database into the suggestionDisplayPanel. Utilize the GetSuggestions web service.
 function loadSuggestions() {
 
 	var webMethod = "ProjectServices.asmx/GetSuggestions";
@@ -195,27 +200,87 @@ function loadSuggestions() {
 		dataType: "json",
 		success: function (msg) {
 			if (msg.d) {
-				alert('Pulled suggestions successfully!')
+				// Empty container
+				$("#suggestionsContainer").empty();
 
-				console.table(msg.d.map(function (suggestion) {
-					return {
-						PostID: suggestion.postId,
-						Date: suggestion.date,
-						EmployeeID: suggestion.empId,
-						Name: suggestion.anon === 'true' ? 'Anonymous' : suggestion.empFirstName + ' ' + suggestion.empLastName,
-						Department: suggestion.dept,
-						Post: suggestion.post,
-						CheckboxData: suggestion.checkboxData,
-						ProposedSolution: suggestion.proposedSolution						
-					};
-				}));
+				// Store suggestions globally, in reverse order newest on top
+				allSuggestions = msg.d.reverse();
 
+				// Use a for loop to iterate over the suggestions array
+				for (var i = 0; i < allSuggestions.length; i++) {
+					var suggestion = allSuggestions[i];
+					// Modify display name and department if the suggestion is annonymous or not
+					var displayName = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Name:</strong> ${suggestion.empFirstName + ' ' + suggestion.empLastName}</div>`;
+					var displayDepartment = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Department:</strong> ${suggestion.dept}</div>`;
+
+
+					// Take the benefit categories array data, and provide formatting
+					var benefitCategories = suggestion.checkboxData.split(',').map(function (category) {
+						return category.trim();
+					}).join(', ');
+
+					// Format the details of the current suggestion and append it to the suggestionsContainer div as part of the suggestionDisplayPanel
+					var suggestionHtml = `
+						<div class="suggestionDisplayBox">
+							<div class="suggestionDetail"><strong><a href="#" onclick="displaySuggestionDetails('${i}'); return false;">#${suggestion.postId}</a></strong>  ${suggestion.date}</div>
+							${displayName}
+							${displayDepartment}
+							<div class="suggestionDetail"><strong>Suggestion:</strong> ${suggestion.post}</div>
+							<div class="suggestionDetail"><strong>Benefit Explanation:</strong> ${suggestion.proposedSolution}</div>
+							<div class="suggestionDetail"><strong>Benefit Categories:</strong> ${benefitCategories}</div>
+						</div>
+					`;
+					// Append the suggestion HTML to the container
+					$("#suggestionsContainer").append(suggestionHtml);
+				}
+				// After all suggesitons are loaded, display the suggestionDisplayPanel
+				showPanel('suggestionDisplayPanel');
 			}
 			else {
+				console.log('No suggestions found.');
 			}
 		},
 		error: function (e) {
 			alert("boo...");
 		}
 	});
+}
+
+// This function will dive into a single suggestion. Display the suggestion details, a simple form to post a comment, and list out all employee comments
+function displaySuggestionDetails(index) {
+
+	// Empty container
+	$("#suggestionDetails").empty();
+
+	// Get the current suggestion based on the index passed into the function. Modify display name and department if the suggestion is annonymous or not
+	var suggestion = allSuggestions[index];
+	var displayName = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Name:</strong> ${suggestion.empFirstName + ' ' + suggestion.empLastName}</div>`;
+	var displayDepartment = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Department:</strong> ${suggestion.dept}</div>`;
+
+	// Take the benefit categories array data, and provide formatting
+	var benefitCategories = suggestion.checkboxData.split(',').map(function (category) {
+		return category.trim();
+	}).join(', ');
+
+	// Format the details of the current suggestion and append it to the suggestionDetails div as part of the suggestionDetailsPanel
+	var suggestionHtml = `
+						<div class="suggestionDisplayBox">
+							<div class="suggestionDetail"><strong>#${suggestion.postId}</a></strong>  ${suggestion.date}</div>
+							${displayName}
+							${displayDepartment}
+							<div class="suggestionDetail"><strong>Suggestion:</strong> ${suggestion.post}</div>
+							<div class="suggestionDetail"><strong>Benefit Categories:</strong> ${benefitCategories}</div>
+							<div class="suggestionDetail"><strong>Benefit Explanation:</strong> ${suggestion.proposedSolution}</div>
+
+						</div>
+					`;
+	$("#suggestionDetails").append(suggestionHtml);
+
+	// After the current suggesiton is loaded, display the suggestionDetailsPanel
+	showPanel('suggestionDetailsPanel');
+
+}
+
+function postReply() {
+
 }
