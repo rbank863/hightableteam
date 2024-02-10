@@ -247,7 +247,7 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("suggestions");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select Posts.PostID, Posts.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.Dept, Posts.Post, Posts.ProposedSolution, " + 
+                string sqlSelect = "select Posts.PostID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.Dept, Posts.Post, Posts.ProposedSolution, " + 
                     "Posts.Date, Posts.Likes, Posts.Anon, Posts.CheckboxData " +
                     "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID;";
 
