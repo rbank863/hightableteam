@@ -265,7 +265,7 @@ namespace ProjectTemplate
                 List<Suggestion> suggestions = new List<Suggestion>();
                 for (int i = 0; i < sqlDt.Rows.Count; i++)
                 {
-                    //only share all info with admins!
+                    //check for anonymity. only display minimal information if anonymous is true.
                     if (sqlDt.Columns.Contains("Anon"))
                     {
                         string isAnon = Convert.ToString(sqlDt.Rows[i]["Anon"]);
@@ -274,6 +274,7 @@ namespace ProjectTemplate
                         {
                             suggestions.Add(new Suggestion
                             {
+                                postId = Convert.ToInt32(sqlDt.Rows[i]["PostID"]),
                                 post = sqlDt.Rows[i]["Post"].ToString(),
                                 proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
                                 date = sqlDt.Rows[i]["Date"].ToString(),
