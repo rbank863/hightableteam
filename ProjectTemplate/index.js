@@ -91,8 +91,7 @@ function logOn(userId, pass) {
 			if (msg.d) {
 				showMenu();
 				showPanel('suggestionPanel');
-				//LoadAccounts();
-				alert("Log on successeful!");
+				loadSuggestions()
 			}
 			else {
 				//server replied false, so let the user know
@@ -175,6 +174,42 @@ function logOff() {
 				hideMenu();
 				clearData();
 				showPanel('logonPanel');
+			}
+			else {
+			}
+		},
+		error: function (e) {
+			alert("boo...");
+		}
+	});
+}
+
+//logs the user off both at the client and at the server
+function loadSuggestions() {
+
+	var webMethod = "ProjectServices.asmx/GetSuggestions";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			if (msg.d) {
+				alert('Pulled suggestions successfully!')
+
+				console.table(msg.d.map(function (suggestion) {
+					return {
+						PostID: suggestion.postId,
+						Date: suggestion.date,
+						EmployeeID: suggestion.empId,
+						Name: suggestion.anon === 'true' ? 'Anonymous' : suggestion.empFirstName + ' ' + suggestion.empLastName,
+						Department: suggestion.dept,
+						Post: suggestion.post,
+						CheckboxData: suggestion.checkboxData,
+						ProposedSolution: suggestion.proposedSolution						
+					};
+				}));
+
 			}
 			else {
 			}

@@ -279,6 +279,7 @@ namespace ProjectTemplate
                                 proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
                                 date = sqlDt.Rows[i]["Date"].ToString(),
                                 likes = sqlDt.Rows[i]["Likes"].ToString(),
+                                anon = "true",
                                 checkboxData = sqlDt.Rows[i]["CheckboxData"].ToString()
                             });
                         }
