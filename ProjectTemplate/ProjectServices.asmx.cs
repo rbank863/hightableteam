@@ -247,7 +247,9 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("suggestions");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select PostID, EmpID, Post, ProposedSolution, Date, Likes, Anon, CheckboxData from Posts order by Date";
+                string sqlSelect = "select Posts.PostID, Posts.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.Dept, Posts.Post, Posts.ProposedSolution, " + 
+                    "Posts.Date, Posts.Likes, Posts.Anon, Posts.CheckboxData " +
+                    "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
@@ -258,38 +260,44 @@ namespace ProjectTemplate
                 sqlDa.Fill(sqlDt);
 
                 //loop through each row in the dataset, creating instances
-                //of our container class Account.  Fill each acciount with
+                //of our container class Suggestion.  Fill each object with
                 //data from the rows, then dump them in a list.
                 List<Suggestion> suggestions = new List<Suggestion>();
                 for (int i = 0; i < sqlDt.Rows.Count; i++)
                 {
-                    //only share user id and pass info with admins!
-                    if (Convert.ToInt32(Session["Admin"]) == 1)
+                    //only share all info with admins!
+                    if (sqlDt.Columns.Contains("Anon"))
                     {
-                        suggestions.Add(new Suggestion
+                        string isAnon = Convert.ToString(sqlDt.Rows[i]["Anon"]);
+
+                        if (isAnon == "true")
                         {
-                            postId = Convert.ToInt32(sqlDt.Rows[i]["PostID"]),
-                            empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
-                            post = sqlDt.Rows[i]["Post"].ToString(),
-                            proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
-                            date = sqlDt.Rows[i]["Date"].ToString(),
-                            likes = sqlDt.Rows[i]["Likes"].ToString(),
-                            anon = sqlDt.Rows[i]["Anon"].ToString(),
-                            checkboxData = sqlDt.Rows[i]["CheckboxData"].ToString()
-                        });
-                    }
-                    else
-                    {
-                        suggestions.Add(new Suggestion
+                            suggestions.Add(new Suggestion
+                            {
+                                post = sqlDt.Rows[i]["Post"].ToString(),
+                                proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
+                                date = sqlDt.Rows[i]["Date"].ToString(),
+                                likes = sqlDt.Rows[i]["Likes"].ToString(),
+                                checkboxData = sqlDt.Rows[i]["CheckboxData"].ToString()
+                            });
+                        }
+                        else
                         {
-                            postId = Convert.ToInt32(sqlDt.Rows[i]["PostID"]),
-                            post = sqlDt.Rows[i]["Post"].ToString(),
-                            proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
-                            date = sqlDt.Rows[i]["Date"].ToString(),
-                            likes = sqlDt.Rows[i]["Likes"].ToString(),
-                            anon = sqlDt.Rows[i]["Anon"].ToString(),
-                            checkboxData = sqlDt.Rows[i]["CheckboxData"].ToString()
-                        });
+                            suggestions.Add(new Suggestion
+                            {
+                                postId = Convert.ToInt32(sqlDt.Rows[i]["PostID"]),
+                                empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
+                                empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
+                                empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
+                                dept = sqlDt.Rows[i]["Dept"].ToString(),
+                                post = sqlDt.Rows[i]["Post"].ToString(),
+                                proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
+                                date = sqlDt.Rows[i]["Date"].ToString(),
+                                likes = sqlDt.Rows[i]["Likes"].ToString(),
+                                anon = sqlDt.Rows[i]["Anon"].ToString(),
+                                checkboxData = sqlDt.Rows[i]["CheckboxData"].ToString()
+                            });
+                        }
                     }
                 }
                 //convert the list of suggestions to an array and return!
