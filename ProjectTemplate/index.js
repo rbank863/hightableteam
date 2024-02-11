@@ -35,7 +35,7 @@ function clearLogon() {
 
 //resets new suggestion inputs
 function clearNewSuggestion() {
-	$('#summary, #otherText, #benefitExplanation').val('');
+	$('#summary, #otherText, #benefitExplanation, #comment').val('');
 	$('#anonymousYes').prop('checked', false);
 	$('#anonymousNo').prop('checked', true);
 	$('#productivity, #methods, #service, #revenue, #costs, #personnel').prop('checked', false);
@@ -251,11 +251,16 @@ function displaySuggestionDetails(index) {
 
 	// Empty container
 	$("#suggestionDetails").empty();
+	$("#suggestionReplies").empty();
+
+
 
 	// Get the current suggestion based on the index passed into the function. Modify display name and department if the suggestion is annonymous or not
 	var suggestion = allSuggestions[index];
 	var displayName = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Name:</strong> ${suggestion.empFirstName + ' ' + suggestion.empLastName}</div>`;
 	var displayDepartment = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Department:</strong> ${suggestion.dept}</div>`;
+
+	$('#currentPostId').val(suggestion.postId)
 
 	// Take the benefit categories array data, and provide formatting
 	var benefitCategories = suggestion.checkboxData.split(',').map(function (category) {
@@ -276,11 +281,61 @@ function displaySuggestionDetails(index) {
 					`;
 	$("#suggestionDetails").append(suggestionHtml);
 
+	// Load suggestion comments
+	var webMethod = "ProjectServices.asmx/GetComments";
+	var parameters = "{\"postId\":\"" + encodeURI(suggestion.postId) + "\"}";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		data: parameters,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			if (msg.d) {
+				for (var i = 0; i < msg.d.length; i++) {
+					var reply = msg.d[i];
+
+					// Format the details of the current suggestion and append it to the suggestionsContainer div as part of the suggestionDisplayPanel
+					var replyHtml = `
+						<div class="suggestionDisplayBox">
+							<div class="suggestionDetail"><strong> ${reply.empFirstName + ' ' + reply.empLastName}</strong> - ${reply.date}</div >
+							<div class="suggestionDetail">${reply.postComment}</div>
+						</div>
+					`;
+					// Append the suggestion HTML to the container
+					$("#suggestionReplies").append(replyHtml);
+				}
+			}
+			else {
+				console.log('No replies found.');
+			}
+		},
+		error: function (e) {
+			alert("boo...");
+		}
+	});
 	// After the current suggesiton is loaded, display the suggestionDetailsPanel
 	showPanel('suggestionDetailsPanel');
 
 }
 
 function postReply() {
-
+	var webMethod = "ProjectServices.asmx/AddComment";
+	var currentPostID = $('#currentPostId').val();
+	var comment = $('#comment').val();
+	var parameters = "{\"postId\":\"" + encodeURI(currentPostID) + "\",\"comment\":\"" + encodeURI(comment) + "\"}";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		data: parameters,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			clearNewSuggestion();
+		},
+		error: function (e) {
+			// Handle error, e.g., display an error message
+			alert("Failed to submit suggestion. Please try again.");
+		}
+	});
 }
