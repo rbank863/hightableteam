@@ -349,5 +349,63 @@ namespace ProjectTemplate
             sqlConnection.Close();
         }
 
+        [WebMethod(EnableSession = true)]
+        public Comment[] GetComments(string postId)
+        {
+            //check out the return type.  It's an array of Comment objects.  You can look at our custom Comment class in this solution to see that it's 
+            //just a container for public class-level variables.  It's a simple container that asp.net will have no trouble converting into json.  When we return
+            //sets of information, it's a good idea to create a custom container class to represent instances (or rows) of that information, and then return an array of those objects.  
+            //Keeps everything simple.
+
+            //WE ONLY SHARE DATA WITH LOGGED IN USERS!
+            if (Session["UserID"] != null)
+            {
+                DataTable sqlDt = new DataTable("comments");
+
+                string sqlConnectString = getConString();
+                string sqlSelect = "select Comments.CommentID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.Dept, Comments.Comment, " +
+                    "Comments.Date, Comments.Likes " +
+                    "FROM Comments INNER JOIN Employees ON Comments.EmpID=Employees.EmpID " +
+                    "WHERE PostID=@postIdValue;";
+
+                MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+                MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+                sqlCommand.Parameters.AddWithValue("@postIdValue", HttpUtility.UrlDecode(postId));
+
+                //gonna use this to fill a data table
+                MySqlDataAdapter sqlDa = new MySqlDataAdapter(sqlCommand);
+                //filling the data table
+                sqlDa.Fill(sqlDt);
+
+                //loop through each row in the dataset, creating instances
+                //of our container class Comment.  Fill each object with
+                //data from the rows, then dump them in a list.
+                List<Comment> comments = new List<Comment>();
+                for (int i = 0; i < sqlDt.Rows.Count; i++)
+                {
+
+                    comments.Add(new Comment
+                    {
+                        commentId = Convert.ToInt32(sqlDt.Rows[i]["CommentID"]),
+                        empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
+                        empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
+                        empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
+                        dept = sqlDt.Rows[i]["Dept"].ToString(),
+                        postComment = sqlDt.Rows[i]["Comment"].ToString(),
+                        date = sqlDt.Rows[i]["Date"].ToString(),
+                        likes = sqlDt.Rows[i]["Likes"].ToString(),
+                    });
+                }
+                //convert the list of suggestions to an array and return!
+                return comments.ToArray();
+            }
+            else
+            {
+                //if they're not logged in, return an empty array
+                return new Comment[0];
+            }
+        }
+
     }
 }
