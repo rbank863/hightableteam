@@ -35,7 +35,7 @@ function clearLogon() {
 
 //resets new suggestion inputs
 function clearNewSuggestion() {
-	$('#summary, #otherText, #benefitExplanation, #comment').val('');
+	$('#summary, #otherText, #benefitExplanation').val('');
 	$('#anonymousYes').prop('checked', false);
 	$('#anonymousNo').prop('checked', true);
 	$('#productivity, #methods, #service, #revenue, #costs, #personnel').prop('checked', false);
@@ -246,20 +246,18 @@ function loadSuggestions() {
 	});
 }
 
-// This function will dive into a single suggestion. Display the suggestion details, a simple form to post a comment, and list out all employee comments
+// This function will dive into a single suggestion. Display the suggestion details and pass along the current post ID to displaySuggestionComments function
 function displaySuggestionDetails(index) {
 
 	// Empty container
 	$("#suggestionDetails").empty();
-	$("#suggestionReplies").empty();
-
-
 
 	// Get the current suggestion based on the index passed into the function. Modify display name and department if the suggestion is annonymous or not
 	var suggestion = allSuggestions[index];
 	var displayName = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Name:</strong> ${suggestion.empFirstName + ' ' + suggestion.empLastName}</div>`;
 	var displayDepartment = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Department:</strong> ${suggestion.dept}</div>`;
 
+	// Set comment form variable to indicate current post ID
 	$('#currentPostId').val(suggestion.postId)
 
 	// Take the benefit categories array data, and provide formatting
@@ -281,9 +279,22 @@ function displaySuggestionDetails(index) {
 					`;
 	$("#suggestionDetails").append(suggestionHtml);
 
+	// Call fucntion to load comments
+	displaySuggestionComments(suggestion.postId);
+
+	// After the current suggesiton is loaded, display the suggestionDetailsPanel
+	showPanel('suggestionDetailsPanel');
+
+}
+
+// Function will take the current post ID, and make a call to GetComments webservice to load all comments to the suggestion detail page
+function displaySuggestionComments(postID) {
+	// Empty dynamic section for suggestion comments
+	$("#suggestionReplies").empty();
+
 	// Load suggestion comments
 	var webMethod = "ProjectServices.asmx/GetComments";
-	var parameters = "{\"postId\":\"" + encodeURI(suggestion.postId) + "\"}";
+	var parameters = "{\"postId\":\"" + encodeURI(postID) + "\"}";
 	$.ajax({
 		type: "POST",
 		url: webMethod,
@@ -314,11 +325,10 @@ function displaySuggestionDetails(index) {
 			alert("boo...");
 		}
 	});
-	// After the current suggesiton is loaded, display the suggestionDetailsPanel
-	showPanel('suggestionDetailsPanel');
-
 }
 
+// Function will take value from basic comment form and make webservice call to Add Comment.
+// Adter adding comment clear the form and call the displaySuggestionComments function to reload comments from database
 function postReply() {
 	var webMethod = "ProjectServices.asmx/AddComment";
 	var currentPostID = $('#currentPostId').val();
@@ -331,7 +341,10 @@ function postReply() {
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
 		success: function (msg) {
-			clearNewSuggestion();
+			// Clear comment form
+			$('#comment').val("");
+			// Refresh the comments section
+			displaySuggestionComments(currentPostID);
 		},
 		error: function (e) {
 			// Handle error, e.g., display an error message
