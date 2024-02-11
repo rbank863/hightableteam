@@ -152,9 +152,9 @@ namespace ProjectTemplate
             //by closing the connection and moving on
             try
             {
-                int accountID = Convert.ToInt32(sqlCommand.ExecuteScalar());
-                //here, you could use this accountID for additional queries regarding
-                //the requested account.  Really this is just an example to show you
+                int empID = Convert.ToInt32(sqlCommand.ExecuteScalar());
+                //here, you could use this empID for additional queries regarding
+                //the requested employee.  Really this is just an example to show you
                 //a query where you get the primary key of the inserted row back from
                 //the database!
             }
@@ -221,9 +221,9 @@ namespace ProjectTemplate
             //by closing the connection and moving on
             try
             {
-                int accountID = Convert.ToInt32(sqlCommand.ExecuteScalar());
-                //here, you could use this accountID for additional queries regarding
-                //the requested account.  Really this is just an example to show you
+                int postID = Convert.ToInt32(sqlCommand.ExecuteScalar());
+                //here, you could use this postID for additional queries regarding
+                //the requested post.  Really this is just an example to show you
                 //a query where you get the primary key of the inserted row back from
                 //the database!
             }
@@ -337,9 +337,9 @@ namespace ProjectTemplate
             //by closing the connection and moving on
             try
             {
-                int accountID = Convert.ToInt32(sqlCommand.ExecuteScalar());
-                //here, you could use this accountID for additional queries regarding
-                //the requested account.  Really this is just an example to show you
+                int commentID = Convert.ToInt32(sqlCommand.ExecuteScalar());
+                //here, you could use this commentID for additional queries regarding
+                //the requested comment.  Really this is just an example to show you
                 //a query where you get the primary key of the inserted row back from
                 //the database!
             }
