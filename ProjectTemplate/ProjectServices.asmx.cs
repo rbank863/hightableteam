@@ -429,7 +429,7 @@ namespace ProjectTemplate
                 string sqlConnectString = getConString();
                 string sqlSelect = "select EmpID, EmpFName, EmpLName, Departments.Dept, Titles.Title, ManagerID " +
                     "FROM Employees " +
-                    "INNER JOIN Employees ON Employees.DeptID=Department.DeptID " +
+                    "INNER JOIN Employees ON Employees.DeptID=Departments.DeptID " +
                     "INNER JOIN Employees ON Employees.TitleID=Titles.TitleID " +
                     "WHERE ManagerID=@empIdValue AND IsDeleted=0;";
 
