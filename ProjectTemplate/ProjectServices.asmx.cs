@@ -424,13 +424,13 @@ namespace ProjectTemplate
             {
                 //convert session ManagerID into integer
                 int empId = Convert.ToInt32(Session["EmpID"]);
-                DataTable sqlDt = new DataTable("employees");
+                DataTable sqlDt = new DataTable("directReports");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select EmpID, EmpFName, EmpLName, Departments.Dept, Titles.Title, ManagerID " +
+                string sqlSelect = "select Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Titles.Title, Employees.ManagerID " +
                     "FROM Employees " +
-                    "INNER JOIN Employees ON Employees.DeptID=Departments.DeptID " +
-                    "INNER JOIN Employees ON Employees.TitleID=Titles.TitleID " +
+                    "INNER JOIN Employees ON Departments.DeptID=Employees.DeptID " +
+                    "INNER JOIN Employees ON Titles.TitleID=Employees.TitleID " +
                     "WHERE ManagerID=@empIdValue AND IsDeleted=0;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
