@@ -470,5 +470,60 @@ namespace ProjectTemplate
             }
         }
 
+        [WebMethod(EnableSession = true)]
+        public Employee[] GetAllEmployees()
+        {
+            //check out the return type.  It's an array of Employee objects.  You can look at our custom Employoee class in this solution to see that it's 
+            //just a container for public class-level variables.  It's a simple container that asp.net will have no trouble converting into json.  When we return
+            //sets of information, it's a good idea to create a custom container class to represent instances (or rows) of that information, and then return an array of those objects.  
+            //Keeps everything simple.
+
+            //WE ONLY SHARE DATA WITH LOGGED IN USERS!
+            if (Session["UserID"] != null)
+            {
+
+                DataTable sqlDt = new DataTable("allEmployees");
+
+                string sqlConnectString = getConString();
+                string sqlSelect = "select Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Titles.Title, Employees.ManagerID " +
+                    "FROM Employees " +
+                    "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
+                    "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
+                    "WHERE IsDeleted=0;";
+
+                MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+                MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+                //gonna use this to fill a data table
+                MySqlDataAdapter sqlDa = new MySqlDataAdapter(sqlCommand);
+                //filling the data table
+                sqlDa.Fill(sqlDt);
+
+                //loop through each row in the dataset, creating instances
+                //of our container class Comment.  Fill each object with
+                //data from the rows, then dump them in a list.
+                List<Employee> allEmployees = new List<Employee>();
+                for (int i = 0; i < sqlDt.Rows.Count; i++)
+                {
+                    allEmployees.Add(new Employee
+                    {
+                        empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
+                        empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
+                        empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
+                        empDepartment = sqlDt.Rows[i]["Dept"].ToString(),
+                        empTitle = sqlDt.Rows[i]["Title"].ToString(),
+
+                    });
+                }
+                //convert the list of suggestions to an array and return!
+                return allEmployees.ToArray();
+            }
+            else
+            {
+                //if they're not logged in, return an empty array
+                return new Employee[0];
+            }
+        }
+
     }
 }
