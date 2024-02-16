@@ -75,7 +75,9 @@ namespace ProjectTemplate
 			string sqlConnectString = getConString();
             //here's our query.  A basic select with nothing fancy.  Note the parameters that begin with @
             //NOTICE: we added admin to what we pull, so that we can store it along with the id in the session
-            string sqlSelect = "SELECT UserID, Admin, EmpID FROM Users WHERE LoginID=@idValue and LoginPass=@passValue";
+            string sqlSelect = "SELECT UserID, Admin, Employees.EmpID, Employees.ManagerID FROM Users " +
+                "INNER JOIN Employees ON Users.EmpID=Employees.EmpID " +
+                "WHERE LoginID=@idValue and LoginPass=@passValue;";
 
             //set up our connection object to be ready to use our connection string
             MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
@@ -105,6 +107,7 @@ namespace ProjectTemplate
                 Session["UserID"] = sqlDt.Rows[0]["UserID"];
                 Session["Admin"] = sqlDt.Rows[0]["Admin"];
                 Session["EmpID"] = sqlDt.Rows[0]["EmpID"];
+                Session["ManagerID"] = sqlDt.Rows[0]["ManagerID"];
                 success = true;
             }
             //return the result!
@@ -122,14 +125,14 @@ namespace ProjectTemplate
         }
 
         [WebMethod(EnableSession = true)]
-        public void NewAccount(string uid, string pass, string fName, string lName, string dept, string admin)
+        public void NewAccount(string uid, string pass, string fName, string lName, string dept, string admin, string title, string manager)
         {
             string sqlConnectString = getConString();
             //this query inserts into Employees and Users table in database with appropriate values. 
             //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
             //does is tell mySql server to return the primary key of the last inserted row.
-            string sqlSelect = "insert into Employees (EmpFName, EmpLName, Dept) " +
-                "values(@fnameValue, @lnameValue, @deptValue); insert into Users (LoginID, LoginPass, EmpID, Admin) " +
+            string sqlSelect = "insert into Employees (EmpFName, EmpLName, DeptID, TitleID, ManagerID) " +
+                "values(@fnameValue, @lnameValue, @deptValue, @titleValue, @managerValue); insert into Users (LoginID, LoginPass, EmpID, Admin) " +
                 "values(@idValue, @passValue, (SELECT EmpID from Employees WHERE EmpFName=@fnameValue AND EmpLName=@lnameValue), @adminValue); " +
                 "SELECT LAST_INSERT_ID();";
 
@@ -142,6 +145,8 @@ namespace ProjectTemplate
             sqlCommand.Parameters.AddWithValue("@lnameValue", HttpUtility.UrlDecode(lName));
             sqlCommand.Parameters.AddWithValue("@deptValue", HttpUtility.UrlDecode(dept));
             sqlCommand.Parameters.AddWithValue("@adminValue", HttpUtility.UrlDecode(admin));
+            sqlCommand.Parameters.AddWithValue("@titleValue", HttpUtility.UrlDecode(title));
+            sqlCommand.Parameters.AddWithValue("@managerValue", HttpUtility.UrlDecode(manager));
 
             //this time, we're not using a data adapter to fill a data table.  We're just
             //opening the connection, telling our command to "executescalar" which says basically
@@ -171,7 +176,7 @@ namespace ProjectTemplate
             {
                 string sqlConnectString = getConString();
                 //this is a simple update, with parameters to pass in values
-                string sqlSelect = "delete from Employees where EmpID=@idValue";
+                string sqlSelect = "update Employees SET IsDeleted=1 WHERE EmpID=@idValue;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
@@ -247,7 +252,7 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("suggestions");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select Posts.PostID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.Dept, Posts.Post, Posts.ProposedSolution, " + 
+                string sqlSelect = "select Posts.PostID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.DeptID, Posts.Post, Posts.ProposedSolution, " + 
                     "Posts.Date, Posts.Likes, Posts.Anon, Posts.CheckboxData " +
                     "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID;";
 
@@ -291,7 +296,7 @@ namespace ProjectTemplate
                                 empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
                                 empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
                                 empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
-                                dept = sqlDt.Rows[i]["Dept"].ToString(),
+                                dept = sqlDt.Rows[i]["DeptID"].ToString(),
                                 post = sqlDt.Rows[i]["Post"].ToString(),
                                 proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
                                 date = sqlDt.Rows[i]["Date"].ToString(),
@@ -363,7 +368,7 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("comments");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select Comments.CommentID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.Dept, Comments.Comment, " +
+                string sqlSelect = "select Comments.CommentID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.DeptID, Comments.Comment, " +
                     "Comments.Date, Comments.Likes " +
                     "FROM Comments INNER JOIN Employees ON Comments.EmpID=Employees.EmpID " +
                     "WHERE PostID=@postIdValue;";
@@ -391,7 +396,7 @@ namespace ProjectTemplate
                         empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
                         empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
                         empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
-                        dept = sqlDt.Rows[i]["Dept"].ToString(),
+                        dept = sqlDt.Rows[i]["DeptID"].ToString(),
                         postComment = sqlDt.Rows[i]["Comment"].ToString(),
                         date = sqlDt.Rows[i]["Date"].ToString(),
                         likes = sqlDt.Rows[i]["Likes"].ToString(),
@@ -404,6 +409,64 @@ namespace ProjectTemplate
             {
                 //if they're not logged in, return an empty array
                 return new Comment[0];
+            }
+        }
+        [WebMethod(EnableSession = true)]
+        public Employee[] GetDirectReports()
+        {
+            //check out the return type.  It's an array of Employee objects.  You can look at our custom Employoee class in this solution to see that it's 
+            //just a container for public class-level variables.  It's a simple container that asp.net will have no trouble converting into json.  When we return
+            //sets of information, it's a good idea to create a custom container class to represent instances (or rows) of that information, and then return an array of those objects.  
+            //Keeps everything simple.
+
+            //WE ONLY SHARE DATA WITH LOGGED IN USERS!
+            if (Session["UserID"] != null)
+            {
+                //convert session ManagerID into integer
+                int empId = Convert.ToInt32(Session["EmpID"]);
+                DataTable sqlDt = new DataTable("employees");
+
+                string sqlConnectString = getConString();
+                string sqlSelect = "select EmpID, EmpFName, EmpLName, Departments.Dept, Titles.Title, ManagerID " +
+                    "FROM Employees " +
+                    "INNER JOIN Employees ON Employees.DeptID=Department.DeptID " +
+                    "INNER JOIN Employees ON Employees.TitleID=Titles.TitleID " +
+                    "WHERE ManagerID=@empIdValue AND IsDeleted=0;";
+
+                MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+                MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+                sqlCommand.Parameters.AddWithValue("@empIdValue", empId);
+
+                //gonna use this to fill a data table
+                MySqlDataAdapter sqlDa = new MySqlDataAdapter(sqlCommand);
+                //filling the data table
+                sqlDa.Fill(sqlDt);
+
+                //loop through each row in the dataset, creating instances
+                //of our container class Comment.  Fill each object with
+                //data from the rows, then dump them in a list.
+                List<Employee> employees = new List<Employee>();
+                for (int i = 0; i < sqlDt.Rows.Count; i++)
+                {
+
+                    employees.Add(new Employee
+                    {
+                        empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
+                        empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
+                        empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
+                        empDepartment = sqlDt.Rows[i]["Dept"].ToString(),
+                        empTitle = sqlDt.Rows[i]["Title"].ToString(),
+                        empManager = Convert.ToInt32(sqlDt.Rows[i]["ManagerID"]),
+                    });
+                }
+                //convert the list of suggestions to an array and return!
+                return employees.ToArray();
+            }
+            else
+            {
+                //if they're not logged in, return an empty array
+                return new Employee[0];
             }
         }
 
