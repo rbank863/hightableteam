@@ -429,8 +429,8 @@ namespace ProjectTemplate
                 string sqlConnectString = getConString();
                 string sqlSelect = "select Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Titles.Title, Employees.ManagerID " +
                     "FROM Employees " +
-                    "INNER JOIN Employees ON Departments.DeptID=Employees.DeptID " +
-                    "INNER JOIN Employees ON Titles.TitleID=Employees.TitleID " +
+                    "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
+                    "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
                     "WHERE ManagerID=@empIdValue AND IsDeleted=0;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
@@ -446,11 +446,11 @@ namespace ProjectTemplate
                 //loop through each row in the dataset, creating instances
                 //of our container class Comment.  Fill each object with
                 //data from the rows, then dump them in a list.
-                List<Employee> employees = new List<Employee>();
+                List<Employee> directReports = new List<Employee>();
                 for (int i = 0; i < sqlDt.Rows.Count; i++)
                 {
 
-                    employees.Add(new Employee
+                    directReports.Add(new Employee
                     {
                         empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
                         empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
@@ -461,7 +461,7 @@ namespace ProjectTemplate
                     });
                 }
                 //convert the list of suggestions to an array and return!
-                return employees.ToArray();
+                return directReports.ToArray();
             }
             else
             {
