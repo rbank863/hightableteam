@@ -18,20 +18,30 @@
 </head>
 <body>
 
-	<div class="titleContainer">
-		<div id="menu" class="menu">
-			<button onclick="javascript: loadSuggestions();">View All Suggestions</button>
-			<button onclick="javascript: showPanel('suggestionPanel');">Submit New Suggestion</button>
-			<button onclick="javascript: logOff();">Log Off</button>
-			<hr />
+	<header class="app-header">
+		<div class="menu-icon" onclick="toggleHamburgerMenu()">☰</div>
+		<div class="logo-container">
+			<a href="#" onclick="goHome(); return false;">
+				<img src="./logo_header.svg" alt="App Logo" class="app-logo">
+			</a>
 		</div>
-	</div>
+		<div class="profile-icon" onclick="openUserProfile()">👤</div>
+	</header>
+	<!-- Slide-out menu (initially hidden) -->
+	<nav id="slideOutMenu" class="side-nav">
+		<a href="#" onclick="goHome()">Home</a>
+		<a href="#" onclick="loadSuggestions()">Recent Feedback</a>
+		<a href="#" onclick="showPanel('suggestionPanel')">Submit Idea</a>
+		<a href="#" onclick="logOff()">Logout</a>
+	</nav>
 
 	<div class="contentContainer">
-
 		<!--Logon Panel -->
 		<div id="logonPanel" class="contentPanel logonPanel">
 			<div class="logonBox">
+				<div class="logo-container">
+					<img src="./logo_header.svg" alt="App Logo" class="app-logo">
+				</div>
 				<form onsubmit="logOn($('#logonId').val(), $('#logonPassword').val()); return false;">
 					<!-- <div id="header" class="left">Sign In</div> -->
 					<div class="left">
@@ -54,7 +64,7 @@
 			<div class="suggestionBox">
 				<form onsubmit="submitSuggestion(); return false;">
 					<!-- <div id="header" class="form-header">Employee Suggestion Form</div> -->
-					<h2>New Suggestion</h2>
+					<h2>New Idea?</h2>
 					<div class="form-group">
 						<label>Do you wish to remain anonymous?</label>
 						<div>
@@ -113,7 +123,7 @@
 
 		<!--Suggestion Display Panel -->
 		<div id="suggestionDisplayPanel" class="contentPanel suggestionDisplayPanel">
-			<h2>All Suggestions</h2>
+			<h2>Recent Feedback</h2>
 			<div id="suggestionsContainer">
 				<!-- Dynamic content -->
 			</div>
@@ -121,7 +131,7 @@
 
 		<!-- New Content Panel for Suggestion Details and Comment Form -->
 		<div id="suggestionDetailsPanel" class="contentPanel suggestionDetailsPanel">
-			<h2>Suggestion Details</h2>
+			<h2>Discussion</h2>
 			<div id="suggestionDetails">
 				<!-- Dynamic content -->
 			</div>
@@ -140,7 +150,7 @@
 
 		<!-- Home Display Panel -->
 		<div id="homeDisplayPanel" class="contentPanel homeDisplayPanel">
-			<h2>Home</h2>
+			<h2>Welcome Back!</h2>
 			<div id="myInfo" class="infoBox">
 				<!-- User's information will be loaded here -->
 			</div>

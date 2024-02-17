@@ -13,7 +13,7 @@ $(document).ready(function () {
 	showPanel("logonPanel")
 });
 
-var contentPanels = ['logonPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel', 'homeDisplayPanel', 'meetingPanel'];
+var contentPanels = ['logonPanel', 'homeDisplayPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel', 'meetingPanel'];
 // Function to manage active content panel. 
 function showPanel(panelId) {
 	// Iterate through all content panels
@@ -42,7 +42,7 @@ function clearLogon() {
 
 // Resets input fields on suggestion form
 function clearNewSuggestion() {
-	$('#summary, #otherText, #benefitExplanation').val('');
+	$('#summary, #otherText, #benefitExplanation, #comment').val('');
 	$('#anonymousYes').prop('checked', false);
 	$('#anonymousNo').prop('checked', true);
 	$('#productivity, #methods, #service, #revenue, #costs, #personnel').prop('checked', false);
@@ -73,20 +73,12 @@ function clearUserData() {
 
 // Allows for cancel of a new meeting form. Calls function to clear inputs and returns user to home screen
 function cancelMeeting() {
-	// Clear form
-	clearMeeting();
-
-	// Return to the home panel
-	showPanel('homeDisplayPanel');
+	goHome()
 }
 
 // Allows for cancel of a suggestion form. Calls function to clear inputs and returns user to home screen
 function cancelSuggestion() {
-	// Clear form
-	clearNewSuggestion();
-
-	// Return to the home panel
-	showPanel('homeDisplayPanel');
+	goHome()
 }
 
 function logOn(userId, pass) {
@@ -231,13 +223,41 @@ function logOff() {
 	});
 }
 
+// Once logged in, call to show menu will bring up navigation system
 function showMenu() {
-	$("#menu").css("display", "flex");
+	$(".app-header").css("display", "flex");
 }
 
+// Once logged out, hide navigation system
 function hideMenu() {
+	$(".app-header").css("display", "none");
 
-	$("#menu").css("display", "none");
+	var menu = $("#slideOutMenu");
+	if (menu.width() === 250) {
+		menu.width(0);
+	}
+}
+
+// Simple function to clear form inputs and display the home panel
+function goHome() {
+	showPanel('homeDisplayPanel')
+	clearNewSuggestion();
+	clearMeeting();
+}
+
+// Toggle slide out menu in and out by changing width
+function toggleHamburgerMenu() {
+	var menu = $("#slideOutMenu");
+	if (menu.width() === 250) {
+		menu.width(0);
+	} else {
+		menu.width(250);
+	}
+}
+
+// On the navigation system is icon to access user profile. Currently just alerts that link was clicked
+function openUserProfile() {
+	alert("User profile clicked!");
 }
 
 function updateHomeDisplay() {
@@ -278,6 +298,10 @@ function updateHomeDisplay() {
 
 // This function will load all suggestion posts from the database into the suggestionDisplayPanel. Utilize the GetSuggestions web service.
 function loadSuggestions() {
+
+	// Clear forms in case user clicks out of them to view feedback
+	clearNewSuggestion();
+	clearMeeting();
 
 	var webMethod = "ProjectServices.asmx/GetSuggestions";
 	$.ajax({
@@ -440,7 +464,7 @@ function submitSuggestion() {
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
 		success: function (msg) {
-			clearNewSuggestion();
+			loadSuggestions(); // after successful new submission, load recent feedback display
 		},
 		error: function (e) {
 			// Handle error, e.g., display an error message
@@ -498,7 +522,7 @@ function submitMeetingDetails() {
 	var webMethod = "ProjectServices.asmx/NewMeeting";
 
 	// Get form values
-	var templateID = 1;
+	var templateID = 1; // hard coded for now, ultimately manager may select from multiple templates
 	var meetingMgrID = $('#meetingMgrID').val();
 	var meetingEmpID = $('#meetingEmpID').val();
 	var meetingA1 = $('#meetingA1').val();

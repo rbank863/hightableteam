@@ -14,18 +14,6 @@ html, body {
     box-sizing: border-box;
 }
 
-.menu {
-    flex: 1;
-    text-align: right;
-    color: #bbbbbb;
-    display: none;
-}
-
-    .menu button {
-        margin-left: 10px;
-        height: 55px;
-    }
-
 .contentContainer {
     padding-top: 60px;
     width: 100%;
@@ -109,3 +97,55 @@ button {
     justify-content: center;
     gap: 10px;
 }
+
+.app-header {
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 10px;
+    background-color: #f8f9fa;
+}
+
+.logo-container {
+    flex-grow: 1; 
+    display: flex;
+    justify-content: center;
+}
+
+.app-logo {
+    height: 50px;
+    margin: 0 125px;
+}
+
+.menu-icon, .profile-icon {
+    cursor: pointer;
+    font-size: 28px;
+    flex: 0 0 auto;
+}
+    
+ .side-nav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: cornflowerblue;
+    overflow-x: hidden;
+
+    padding-top: 60px;
+}
+
+    .side-nav a {
+        padding: 10px 15px;
+        text-decoration: none;
+        font-size: 25px;
+        color: black;
+        display: block;
+
+    }
+
+        .side-nav a:hover {
+            color: white;
+        }
+
