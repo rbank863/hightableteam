@@ -8,6 +8,7 @@ using MySql.Data.MySqlClient;
 using System.Data;
 using System.Web.UI.WebControls;
 using System.Security.Principal;
+using Org.BouncyCastle.Bcpg;
 
 namespace ProjectTemplate
 {
@@ -101,9 +102,9 @@ namespace ProjectTemplate
             //a legit account
             if (sqlDt.Rows.Count > 0)
             {
-                //if we found an account, store the id, admin status, and empId in the session
+                //if we found an account, store the userId, admin status, empId, and managerId in the session
                 //so we can check those values later on other method calls to see if they 
-                //are 1) logged in at all, 2) admin or not, and 3) what their empId is
+                //are 1) logged in at all, 2) admin or not, 3) what their empId is, 4) who their manager is
                 Session["UserID"] = sqlDt.Rows[0]["UserID"];
                 Session["Admin"] = sqlDt.Rows[0]["Admin"];
                 Session["EmpID"] = sqlDt.Rows[0]["EmpID"];
@@ -522,6 +523,22 @@ namespace ProjectTemplate
             {
                 //if they're not logged in, return an empty array
                 return new Employee[0];
+            }
+        }
+
+        [WebMethod(EnableSession = true)]
+        public string GetUserID()
+        {
+            // Check if the user is logged in
+            if (Session["UserID"] != null)
+            {
+                // Return the UserID from the session
+                return Session["UserID"].ToString();
+            }
+            else
+            {
+                // Return a message indicating that the user is not logged in
+                return "User is not logged in.";
             }
         }
 
