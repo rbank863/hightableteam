@@ -29,12 +29,6 @@
 
 	<div class="contentContainer">
 
-		<!--Test Database Connection Panel
-	<div id="testPanel" class="contentPanel testPanel">
-		<button onclick="javascript: testButtonHandler();">Click here to test connection!</button>
-		<hr />
-	</div>
-	-->
 		<!--Logon Panel -->
 		<div id="logonPanel" class="contentPanel logonPanel">
 			<div class="logonBox">
@@ -109,8 +103,9 @@
 						<textarea id="benefitExplanation" name="benefitExplanation" required></textarea>
 					</div>
 
-					<div class="form-group">
+					<div class="form-group button-container">
 						<button type="submit">Submit Suggestion</button>
+						<button type="button" onclick="cancelSuggestion()">Cancel</button>
 					</div>
 				</form>
 			</div>
@@ -158,6 +153,47 @@
 			</div>
 		</div>
 
+		<!-- 1on1 Meeting Panel -->
+		<div id="meetingPanel" class="contentPanel meetingPanel">
+			<h2>1-on-1 Meeting Details</h2>
+			<div id="meetingNames">
+				<p>Manager: <span id="managerName"></span></p>
+				<p>Employee: <span id="employeeName"></span></p>
+			</div>
+			<form onsubmit="submitMeetingDetails(); return false;">
+				<input type="hidden" id="meetingMgrID" name="meetingMgrID" value="">
+				<input type="hidden" id="meetingEmpID" name="meetingEmpID" value="">
+
+				<div class="form-group">
+					<label for="meetingA1">What are you current career priorities and goals that excite you?</label>
+					<textarea id="meetingA1" name="meetingA1" required></textarea>
+				</div>
+				<div class="form-group">
+					<label for="meetingA2">What have you achieved, learned, and are proud of since we last talked?</label>
+					<textarea id="meetingA2" name="meetingA2" required></textarea>
+				</div>
+				<div class="form-group">
+					<label for="meetingA3">How can you further improve yourself and seliver better results in the future?</label>
+					<textarea id="meetingA3" name="meetingA3" required></textarea>
+				</div>
+				<div class="form-group">
+					<label for="meetingA4">What can I do to help you achive your goals and improve?</label>
+					<textarea id="meetingA4" name="meetingA4" required></textarea>
+				</div>
+				<div class="form-group">
+					<label for="meetingA5">What suggestions or feedback do you have for me, your team members, and the organization?</label>
+					<textarea id="meetingA5" name="meetingA5" required></textarea>
+				</div>
+				<div class="form-group">
+					<label for="meetingA6">Notes and Action Items:</label>
+					<textarea id="meetingA6" name="meetingA6" required></textarea>
+				</div>
+				<div class="form-group button-container">
+					<button type="submit">Complete 1on1 Meeting</button>
+					<button type="button" onclick="cancelMeeting()">Cancel</button>
+				</div>
+			</form>
+		</div>
 	</div>
 </body>
 </html >

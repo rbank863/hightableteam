@@ -103,3 +103,9 @@ button {
     #directReportsInfo h3 {
         margin-top: 0;
     }
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}

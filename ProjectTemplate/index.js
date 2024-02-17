@@ -6,13 +6,15 @@ var currentEmployee;
 var currentManager;
 var directReports = [];
 var allSuggestions = [];
+var allEmployees = [];
 
+// On load call function to show logon panel
 $(document).ready(function () {
 	showPanel("logonPanel")
 });
 
-var contentPanels = ['logonPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel', 'homeDisplayPanel'];
-
+var contentPanels = ['logonPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel', 'homeDisplayPanel', 'meetingPanel'];
+// Function to manage active content panel. 
 function showPanel(panelId) {
 	// Iterate through all content panels
 	for (var i = 0; i < contentPanels.length; i++) {
@@ -24,21 +26,21 @@ function showPanel(panelId) {
 	}
 }
 
-//this function clears data from all panels
+// Function used to clear all form inpurs and system variables at logoff
 function clearData() {
 	clearLogon();
 	clearNewSuggestion();
 	clearSuggestionPannels();
+	clearMeeting();
 	clearUserData();
-
 }
 
-//resets login inputs
+// Resets input fields on logon form
 function clearLogon() {
 	$('#logonId, #logonPassword').val("");
 }
 
-//resets new suggestion inputs
+// Resets input fields on suggestion form
 function clearNewSuggestion() {
 	$('#summary, #otherText, #benefitExplanation').val('');
 	$('#anonymousYes').prop('checked', false);
@@ -46,41 +48,47 @@ function clearNewSuggestion() {
 	$('#productivity, #methods, #service, #revenue, #costs, #personnel').prop('checked', false);
 }
 
-//resets new suggestion comment inputs
+// Clears suggestion dynamic content containers 
 function clearSuggestionPannels() {
 	$("#suggestionsContainer").empty();
 	$("#suggestionDetails").empty();
+	$("#suggestionReplies").empty();
 }
 
-// reset global variables
+// Reset input fields for meeting form
+function clearMeeting() {
+	$('#meetingPanel').find('textarea').val('');
+	$('#meetingPanel').find('input[type="hidden"]').val('');
+}
+
+// Reset global variables
 function clearUserData() {
 	userID = undefined;
 	currentEmployee = undefined;
 	currentManager = undefined;
 	directReports = [];
 	allSuggestions = [];
+	allEmployees = [];
 }
 
-function testButtonHandler() {
-	var webMethod = "ProjectServices.asmx/TestConnection";
-	var parameters = "{}";
+// Allows for cancel of a new meeting form. Calls function to clear inputs and returns user to home screen
+function cancelMeeting() {
+	// Clear form
+	clearMeeting();
 
-	//jQuery ajax method
-	$.ajax({
-		type: "POST",
-		url: webMethod,
-		data: parameters,
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-		success: function (msg) {
-			var responseFromServer = msg.d;
-			alert(responseFromServer);
-		},
-		error: function (e) {
-			alert("this code will only execute if javascript is unable to access the webservice");
-		}
-	})
+	// Return to the home panel
+	showPanel('homeDisplayPanel');
 }
+
+// Allows for cancel of a suggestion form. Calls function to clear inputs and returns user to home screen
+function cancelSuggestion() {
+	// Clear form
+	clearNewSuggestion();
+
+	// Return to the home panel
+	showPanel('homeDisplayPanel');
+}
+
 function logOn(userId, pass) {
 	//the url of the webservice we will be talking to
 	var webMethod = "ProjectServices.asmx/LogOn";
@@ -113,8 +121,6 @@ function logOn(userId, pass) {
 			if (msg.d) {
 				getUser();
 				showMenu();
-				//loadSuggestions()
-				//showPanel('suggestionDisplayPanel');
 			}
 			else {
 				//server replied false, so let the user know
@@ -128,76 +134,6 @@ function logOn(userId, pass) {
 			//then this function mapped to the error key is executed rather
 			//than the one mapped to the success key.  This is just a garbage
 			//alert becaue I'm lazy
-			alert("boo...");
-		}
-	});
-}
-
-function submitSuggestion() {
-	// The URL of the web service for submitting suggestions
-	var webMethod = "ProjectServices.asmx/NewSuggestion";
-
-	// Collect field values
-	var anonymous = $('input[name="anonymous"]:checked').val();
-	var summary = $('#summary').val();
-	var benefitExplanation = $('#benefitExplanation').val();
-
-	// Collect selected suggestion types in an array and encode each
-	var suggestionTypes = [];
-	$('input[name="suggestionType"]:checked').each(function () {
-		var suggestionType = encodeURI($(this).val());
-		suggestionTypes.push(suggestionType);
-	});
-
-	var parameters = "{\"post\":\"" + encodeURI(summary) + "\",\"proposedSolution\":\"" + encodeURI(benefitExplanation) + "\",\"anon\":\"" + encodeURI(anonymous) + "\",\"checkboxData\":\"" + encodeURI(suggestionTypes) + "\"}";
-	console.log(parameters);
-
-	$.ajax({
-		type: "POST",
-		url: webMethod,
-		data: parameters,
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-		success: function (msg) {
-			clearNewSuggestion();
-		},
-		error: function (e) {
-			// Handle error, e.g., display an error message
-			alert("Failed to submit suggestion. Please try again.");
-		}
-	});
-}
-
-function showMenu() {
-	$("#menu").css("display", "flex");
-}
-
-function hideMenu() {
-
-	$("#menu").css("display", "none");
-}
-
-
-//logs the user off both at the client and at the server
-function logOff() {
-
-	var webMethod = "ProjectServices.asmx/LogOff";
-	$.ajax({
-		type: "POST",
-		url: webMethod,
-		contentType: "application/json; charset=utf-8",
-		dataType: "json",
-		success: function (msg) {
-			if (msg.d) {
-				// Close the menu, clear all data in case user logs back in, and display the logonPanel
-				hideMenu();
-				clearData();
-				showPanel('logonPanel');
-			}
-			else {
-			}
-		},
-		error: function (e) {
 			alert("boo...");
 		}
 	});
@@ -238,7 +174,7 @@ function getEmployees(id) {
 		dataType: "json",
 		success: function (msg) {
 			if (msg.d) {
-				var allEmployees = msg.d;
+				allEmployees = msg.d;
 
 				// Find the logged in user in allEmployees
 				currentEmployee = allEmployees.find(function (employee) {
@@ -268,6 +204,76 @@ function getEmployees(id) {
 			alert("boo...");
 		}
 	});
+}
+
+//logs the user off both at the client and at the server
+function logOff() {
+
+	var webMethod = "ProjectServices.asmx/LogOff";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			if (msg.d) {
+				// Close the menu, clear all data in case user logs back in, and display the logonPanel
+				hideMenu();
+				clearData();
+				showPanel('logonPanel');
+			}
+			else {
+			}
+		},
+		error: function (e) {
+			alert("boo...");
+		}
+	});
+}
+
+function showMenu() {
+	$("#menu").css("display", "flex");
+}
+
+function hideMenu() {
+
+	$("#menu").css("display", "none");
+}
+
+function updateHomeDisplay() {
+	// Clear previous information
+	$("#myInfo").empty();
+	$("#managerInfo").empty();
+	$("#directReportsInfo").empty().append('<h3>Direct Reports</h3>');
+
+	// Load and display current user's information
+	$("#myInfo").html(`<strong>Me:</strong> ${currentEmployee.empFirstName} ${currentEmployee.empLastName} - ${currentEmployee.empDepartment}`);
+
+	// Load and display manager's information, if available
+	if (currentManager) {
+		$("#managerInfo").html(`<strong>Manager:</strong> ${currentManager.empFirstName} ${currentManager.empLastName} - ${currentManager.empDepartment}`);
+	} else {
+		$("#managerInfo").html('<strong>Manager:</strong> None');
+	}
+
+	// Load and display direct reports, if any
+	if (directReports && directReports.length > 0) {
+		let directReportsHtml = directReports.map(dr => `
+            <div>
+                <a href="#" onclick="initiateOneOnOne(${dr.empId}); return false;">
+                    ${dr.empFirstName} ${dr.empLastName}
+                </a> - ${dr.empDepartment}
+            </div>
+        `).join('');
+		$("#directReportsInfo").append(directReportsHtml);
+		// Adding instructional text at the bottom
+		$("#directReportsInfo").append('<div style="margin-top: 10px;"><em>Click on a name to initiate a 1-on-1 meeting.</em></div>');
+	} else {
+		$("#directReportsInfo").append('<div>No direct reports</div>');
+	}
+
+	// Show the Home Display Panel
+	showPanel('homeDisplayPanel');
 }
 
 // This function will load all suggestion posts from the database into the suggestionDisplayPanel. Utilize the GetSuggestions web service.
@@ -408,6 +414,41 @@ function displaySuggestionComments(postID) {
 	});
 }
 
+function submitSuggestion() {
+	// The URL of the web service for submitting suggestions
+	var webMethod = "ProjectServices.asmx/NewSuggestion";
+
+	// Collect field values
+	var anonymous = $('input[name="anonymous"]:checked').val();
+	var summary = $('#summary').val();
+	var benefitExplanation = $('#benefitExplanation').val();
+
+	// Collect selected suggestion types in an array and encode each
+	var suggestionTypes = [];
+	$('input[name="suggestionType"]:checked').each(function () {
+		var suggestionType = encodeURI($(this).val());
+		suggestionTypes.push(suggestionType);
+	});
+
+	var parameters = "{\"post\":\"" + encodeURI(summary) + "\",\"proposedSolution\":\"" + encodeURI(benefitExplanation) + "\",\"anon\":\"" + encodeURI(anonymous) + "\",\"checkboxData\":\"" + encodeURI(suggestionTypes) + "\"}";
+	console.log(parameters);
+
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		data: parameters,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			clearNewSuggestion();
+		},
+		error: function (e) {
+			// Handle error, e.g., display an error message
+			alert("Failed to submit suggestion. Please try again.");
+		}
+	});
+}
+
 // Function will take value from basic comment form and make webservice call to Add Comment.
 // Adter adding comment clear the form and call the displaySuggestionComments function to reload comments from database
 function postReply() {
@@ -434,31 +475,56 @@ function postReply() {
 	});
 }
 
-function updateHomeDisplay() {
-	// Clear previous information
-	$("#myInfo").empty();
-	$("#managerInfo").empty();
-	$("#directReportsInfo").empty().append('<h3>Direct Reports</h3>');
+function initiateOneOnOne(directReportId) {
+	// Set the IDs in the hidden fields
+	$('#meetingMgrID').val(userID);
+	$('#meetingEmpID').val(directReportId);
 
-	// Load and display current user's information
-	$("#myInfo").html(`<strong>Me:</strong> ${currentEmployee.empFirstName} ${currentEmployee.empLastName} - ${currentEmployee.empDepartment}`);
+	var managerName = currentEmployee.empFirstName + " " + currentEmployee.empLastName;
+	$('#managerName').text(managerName);
 
-	// Load and display manager's information, if available
-	if (currentManager) {
-		$("#managerInfo").html(`<strong>Manager:</strong> ${currentManager.empFirstName} ${currentManager.empLastName} - ${currentManager.empDepartment}`);
-	} else {
-		$("#managerInfo").html('<strong>Manager:</strong> None');
-	}
+	var directReportEmployee = allEmployees.find(function (directReport) {
+		return directReport.empId === directReportId;
+	});
+	var employeeName = directReportEmployee.empFirstName + " " + directReportEmployee.empLastName;
+	$('#employeeName').text(employeeName);
 
-	// Load and display direct reports, if any
-	if (directReports && directReports.length > 0) {
-		let directReportsHtml = directReports.map(dr => `<div>${dr.empFirstName} ${dr.empLastName} - ${dr.empDepartment}</div>`).join('');
-		$("#directReportsInfo").append(directReportsHtml);
-	} else {
-		$("#directReportsInfo").append('<div>No direct reports</div>');
-	}
-
-	// Show the Home Display Panel
-	showPanel('homeDisplayPanel');
+	// Show the 1-on-1 meeting panel
+	showPanel('meetingPanel');
 }
+function submitMeetingDetails() {
 
+	// The URL of the web service for submitting suggestions
+	var webMethod = "ProjectServices.asmx/NewMeeting";
+
+	// Get form values
+	var templateID = 1;
+	var meetingMgrID = $('#meetingMgrID').val();
+	var meetingEmpID = $('#meetingEmpID').val();
+	var meetingA1 = $('#meetingA1').val();
+	var meetingA2 = $('#meetingA2').val();
+	var meetingA3 = $('#meetingA3').val();
+	var meetingA4 = $('#meetingA4').val();
+	var meetingA5 = $('#meetingA5').val();
+	var meetingA6 = $('#meetingA6').val();
+
+	var parameters = "{\"templateID\":\"" + encodeURI(templateID) + "\",\"empID\":\"" + encodeURI(meetingEmpID) + "\",\"mgrID\":\"" + encodeURI(meetingMgrID) + "\",\"a1\":\"" + encodeURI(meetingA1)
+						+ "\",\"a2\":\"" + encodeURI(meetingA2) + "\",\"a3\":\"" + encodeURI(meetingA3) + "\",\"a4\":\"" + encodeURI(meetingA4) + "\",\"a5\":\"" + encodeURI(meetingA5) + "\",\"a6\":\"" + encodeURI(meetingA6) + "\"}";
+	console.log(parameters);
+
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		data: parameters,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			alert("1-on-1 meeting details submitted successfully.");
+			clearMeeting();
+			showPanel('homeDisplayPanel');
+		},
+		error: function (e) {
+			alert("Failed to submit 1-on-1 meeting details. Please try again.");
+		}
+	});
+}
