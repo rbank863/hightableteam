@@ -11,7 +11,7 @@ $(document).ready(function () {
 	showPanel("logonPanel")
 });
 
-var contentPanels = ['logonPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel'];
+var contentPanels = ['logonPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel', 'homeDisplayPanel'];
 
 function showPanel(panelId) {
 	// Iterate through all content panels
@@ -113,8 +113,8 @@ function logOn(userId, pass) {
 			if (msg.d) {
 				getUser();
 				showMenu();
-				loadSuggestions()
-				showPanel('suggestionDisplayPanel');
+				//loadSuggestions()
+				//showPanel('suggestionDisplayPanel');
 			}
 			else {
 				//server replied false, so let the user know
@@ -257,6 +257,8 @@ function getEmployees(id) {
 				directReports = allEmployees.filter(function (employee) {
 					return employee.empManager === currentEmployee.empId;
 				});
+
+				updateHomeDisplay();
 			}
 			else {
 				console.log('Something went wrong');
@@ -431,3 +433,32 @@ function postReply() {
 		}
 	});
 }
+
+function updateHomeDisplay() {
+	// Clear previous information
+	$("#myInfo").empty();
+	$("#managerInfo").empty();
+	$("#directReportsInfo").empty().append('<h3>Direct Reports</h3>');
+
+	// Load and display current user's information
+	$("#myInfo").html(`<strong>Me:</strong> ${currentEmployee.empFirstName} ${currentEmployee.empLastName} - ${currentEmployee.empDepartment}`);
+
+	// Load and display manager's information, if available
+	if (currentManager) {
+		$("#managerInfo").html(`<strong>Manager:</strong> ${currentManager.empFirstName} ${currentManager.empLastName} - ${currentManager.empDepartment}`);
+	} else {
+		$("#managerInfo").html('<strong>Manager:</strong> None');
+	}
+
+	// Load and display direct reports, if any
+	if (directReports && directReports.length > 0) {
+		let directReportsHtml = directReports.map(dr => `<div>${dr.empFirstName} ${dr.empLastName} - ${dr.empDepartment}</div>`).join('');
+		$("#directReportsInfo").append(directReportsHtml);
+	} else {
+		$("#directReportsInfo").append('<div>No direct reports</div>');
+	}
+
+	// Show the Home Display Panel
+	showPanel('homeDisplayPanel');
+}
+

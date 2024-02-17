@@ -490,7 +490,8 @@ namespace ProjectTemplate
                     "FROM Employees " +
                     "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
                     "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
-                    "WHERE IsDeleted=0;";
+                    "WHERE IsDeleted=0 " +
+                    "ORDER BY EmpFName;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);

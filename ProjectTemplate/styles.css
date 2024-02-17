@@ -89,3 +89,17 @@ button {
 .suggestionDetail {
     margin-bottom: 5px;
 }
+
+.homeDisplayPanel {
+    margin-top: 20px;
+}
+
+.infoBox, #directReportsInfo {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+    #directReportsInfo h3 {
+        margin-top: 0;
+    }
