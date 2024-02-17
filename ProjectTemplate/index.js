@@ -1,9 +1,11 @@
 "use strict";
 
-var allSuggestions = []; // Global array to store suggestions
+// Global Variables
 var userID;
-var user;
-var allUsers = [];
+var currentEmployee;
+var currentManager;
+var directReports = [];
+var allSuggestions = [];
 
 $(document).ready(function () {
 	showPanel("logonPanel")
@@ -22,13 +24,13 @@ function showPanel(panelId) {
 	}
 }
 
-
-
 //this function clears data from all panels
 function clearData() {
 	clearLogon();
 	clearNewSuggestion();
 	clearSuggestionPannels();
+	clearUserData();
+
 }
 
 //resets login inputs
@@ -44,12 +46,20 @@ function clearNewSuggestion() {
 	$('#productivity, #methods, #service, #revenue, #costs, #personnel').prop('checked', false);
 }
 
+//resets new suggestion comment inputs
 function clearSuggestionPannels() {
 	$("#suggestionsContainer").empty();
 	$("#suggestionDetails").empty();
 }
 
-
+// reset global variables
+function clearUserData() {
+	userID = undefined;
+	currentEmployee = undefined;
+	currentManager = undefined;
+	directReports = [];
+	allSuggestions = [];
+}
 
 function testButtonHandler() {
 	var webMethod = "ProjectServices.asmx/TestConnection";
@@ -102,7 +112,6 @@ function logOn(userId, pass) {
 			//but honestly I don't know...)
 			if (msg.d) {
 				getUser();
-				getUsers();
 				showMenu();
 				loadSuggestions()
 				showPanel('suggestionDisplayPanel');
@@ -194,6 +203,7 @@ function logOff() {
 	});
 }
 
+// Function makes call to get the employeeID of the logged in user. Uses that value to call getEmployees function
 function getUser() {
 
 	var webMethod = "ProjectServices.asmx/GetUserID";
@@ -204,9 +214,11 @@ function getUser() {
 		dataType: "json",
 		success: function (msg) {
 			if (msg.d) {
-				userID = msg.d;
+				userID = parseInt(msg.d);
+				getEmployees(userID);
 			}
 			else {
+				console.log('Something went wrong');
 			}
 		},
 		error: function (e) {
@@ -215,7 +227,8 @@ function getUser() {
 	});
 }
 
-function getUsers() {
+// This function gets all active employees. Then using the employeeID of the active user identifies the logged in user, manager, and direct reports
+function getEmployees(id) {
 
 	var webMethod = "ProjectServices.asmx/GetAllEmployees";
 	$.ajax({
@@ -225,10 +238,28 @@ function getUsers() {
 		dataType: "json",
 		success: function (msg) {
 			if (msg.d) {
-				allUsers = msg.d;
-				console.log(allUsers);
+				var allEmployees = msg.d;
+
+				// Find the logged in user in allEmployees
+				currentEmployee = allEmployees.find(function (employee) {
+					return employee.empId === id;
+				});
+
+				// Check if the logged in user has a manager
+				if (currentEmployee.empManager && currentEmployee.empManager !== 0) {
+					// Find the manager in allEmployees
+					currentManager = allEmployees.find(function (manager) {
+						return manager.empId === currentEmployee.empManager;
+					});
+				}
+
+				// Find all direct reports to current user
+				directReports = allEmployees.filter(function (employee) {
+					return employee.empManager === currentEmployee.empId;
+				});
 			}
 			else {
+				console.log('Something went wrong');
 			}
 		},
 		error: function (e) {
@@ -236,8 +267,6 @@ function getUsers() {
 		}
 	});
 }
-
-
 
 // This function will load all suggestion posts from the database into the suggestionDisplayPanel. Utilize the GetSuggestions web service.
 function loadSuggestions() {
