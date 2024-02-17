@@ -486,7 +486,7 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("allEmployees");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Titles.Title, Employees.ManagerID " +
+                string sqlSelect = "select Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Titles.Title, ifNull(Employees.ManagerID,0) as ManagerID " +
                     "FROM Employees " +
                     "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
                     "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
@@ -513,6 +513,7 @@ namespace ProjectTemplate
                         empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
                         empDepartment = sqlDt.Rows[i]["Dept"].ToString(),
                         empTitle = sqlDt.Rows[i]["Title"].ToString(),
+                        empManager = Convert.ToInt32(sqlDt.Rows[i]["ManagerID"]),
 
                     });
                 }

@@ -1,6 +1,9 @@
 "use strict";
 
 var allSuggestions = []; // Global array to store suggestions
+var userID;
+var user;
+var allUsers = [];
 
 $(document).ready(function () {
 	showPanel("logonPanel")
@@ -98,6 +101,8 @@ function logOn(userId, pass) {
 			//to a generic property of the server response called d (I assume short for data
 			//but honestly I don't know...)
 			if (msg.d) {
+				getUser();
+				getUsers();
 				showMenu();
 				loadSuggestions()
 				showPanel('suggestionDisplayPanel');
@@ -188,6 +193,51 @@ function logOff() {
 		}
 	});
 }
+
+function getUser() {
+
+	var webMethod = "ProjectServices.asmx/GetUserID";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			if (msg.d) {
+				userID = msg.d;
+			}
+			else {
+			}
+		},
+		error: function (e) {
+			alert("boo...");
+		}
+	});
+}
+
+function getUsers() {
+
+	var webMethod = "ProjectServices.asmx/GetAllEmployees";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			if (msg.d) {
+				allUsers = msg.d;
+				console.log(allUsers);
+			}
+			else {
+			}
+		},
+		error: function (e) {
+			alert("boo...");
+		}
+	});
+}
+
+
 
 // This function will load all suggestion posts from the database into the suggestionDisplayPanel. Utilize the GetSuggestions web service.
 function loadSuggestions() {
