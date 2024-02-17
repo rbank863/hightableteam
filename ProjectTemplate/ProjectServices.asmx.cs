@@ -253,9 +253,9 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("suggestions");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select Posts.PostID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.DeptID, Posts.Post, Posts.ProposedSolution, " + 
+                string sqlSelect = "select Posts.PostID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Posts.Post, Posts.ProposedSolution, " + 
                     "Posts.Date, Posts.Likes, Posts.Anon, Posts.CheckboxData " +
-                    "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID;";
+                    "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID INNER JOIN Departments ON Employees.DeptID = Departments.DeptID;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
@@ -297,7 +297,7 @@ namespace ProjectTemplate
                                 empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
                                 empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
                                 empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
-                                dept = sqlDt.Rows[i]["DeptID"].ToString(),
+                                dept = sqlDt.Rows[i]["Dept"].ToString(),
                                 post = sqlDt.Rows[i]["Post"].ToString(),
                                 proposedSolution = sqlDt.Rows[i]["ProposedSolution"].ToString(),
                                 date = sqlDt.Rows[i]["Date"].ToString(),
