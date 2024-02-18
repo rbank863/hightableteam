@@ -9,6 +9,7 @@ using System.Data;
 using System.Web.UI.WebControls;
 using System.Security.Principal;
 using Org.BouncyCastle.Bcpg;
+using System.Web.Services.Description;
 
 namespace ProjectTemplate
 {
@@ -133,7 +134,8 @@ namespace ProjectTemplate
             //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
             //does is tell mySql server to return the primary key of the last inserted row.
             string sqlSelect = "insert into Employees (EmpFName, EmpLName, DeptID, TitleID, ManagerID) " +
-                "values(@fnameValue, @lnameValue, @deptValue, @titleValue, @managerValue); insert into Users (LoginID, LoginPass, EmpID, Admin) " +
+                "values(@fnameValue, @lnameValue, @deptValue, @titleValue, @managerValue);" +
+                "insert into Users (LoginID, LoginPass, EmpID, Admin) " +
                 "values(@idValue, @passValue, (SELECT EmpID from Employees WHERE EmpFName=@fnameValue AND EmpLName=@lnameValue), @adminValue); " +
                 "SELECT LAST_INSERT_ID();";
 
@@ -197,6 +199,33 @@ namespace ProjectTemplate
         }
 
         [WebMethod(EnableSession = true)]
+        public void RestoreAccount(string id)
+        {
+            if (Convert.ToInt32(Session["Admin"]) == 1)
+            {
+                string sqlConnectString = getConString();
+                //this is a simple update, with parameters to pass in values
+                string sqlSelect = "update Employees SET IsDeleted=0 WHERE EmpID=@idValue;";
+
+                MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+                MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+                sqlCommand.Parameters.AddWithValue("@idValue", HttpUtility.UrlDecode(id));
+
+                sqlConnection.Open();
+                try
+                {
+                    sqlCommand.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                }
+                sqlConnection.Close();
+            }
+        }
+
+
+        [WebMethod(EnableSession = true)]
         public void NewSuggestion(string post, string proposedSolution, string anon, string checkboxData)
         {
             //convert stored Session EmpID to an integer
@@ -244,8 +273,8 @@ namespace ProjectTemplate
         {
             //check out the return type.  It's an array of Suggestion objects.  You can look at our custom Suggestion class in this solution to see that it's 
             //just a container for public class-level variables.  It's a simple container that asp.net will have no trouble converting into json.  When we return
-            //sets of information, it's a good idea to create a custom container class to represent instances (or rows) of that information, and then return an array of those objects.  
-            //Keeps everything simple.
+            //sets of information, it's a good idea to create a custom container class to represent instances (or rows) of that information, and then return an array
+            //of those objects. Keeps everything simple.
 
             //WE ONLY SHARE DATA WITH LOGGED IN USERS!
             if (Session["UserID"] != null)
@@ -255,7 +284,8 @@ namespace ProjectTemplate
                 string sqlConnectString = getConString();
                 string sqlSelect = "select Posts.PostID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Posts.Post, Posts.ProposedSolution, " + 
                     "Posts.Date, Posts.Likes, Posts.Anon, Posts.CheckboxData " +
-                    "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID INNER JOIN Departments ON Employees.DeptID = Departments.DeptID;";
+                    "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID " +
+                    "INNER JOIN Departments ON Employees.DeptID = Departments.DeptID;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
@@ -369,9 +399,10 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("comments");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select Comments.CommentID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Employees.DeptID, Comments.Comment, " +
+                string sqlSelect = "select Comments.CommentID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Comments.Comment, " +
                     "Comments.Date, Comments.Likes " +
                     "FROM Comments INNER JOIN Employees ON Comments.EmpID=Employees.EmpID " +
+                    "INNER JOIN Departments on Employees.DeptID=Departments.DeptID " +
                     "WHERE PostID=@postIdValue;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
@@ -397,7 +428,7 @@ namespace ProjectTemplate
                         empId = Convert.ToInt32(sqlDt.Rows[i]["EmpID"]),
                         empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
                         empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
-                        dept = sqlDt.Rows[i]["DeptID"].ToString(),
+                        dept = sqlDt.Rows[i]["Dept"].ToString(),
                         postComment = sqlDt.Rows[i]["Comment"].ToString(),
                         date = sqlDt.Rows[i]["Date"].ToString(),
                         likes = sqlDt.Rows[i]["Likes"].ToString(),
@@ -544,5 +575,95 @@ namespace ProjectTemplate
             }
         }
 
+        [WebMethod(EnableSession = true)]
+        public void NewOneOnOneAnswers(string templateId, string empId, string mgrId, string firstAnswer, string secondAnswer, string thirdAnswer, string fourthAnswer, string fifthAnswer, string sixthAnswer)
+        {
+
+            string sqlConnectString = getConString();
+            //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
+            //does is tell mySql server to return the primary key of the last inserted row.
+            string sqlSelect = "insert into Meetings (Date, TemplateID, EmpID, ManagerID, A1, A2, A3, A4, A5, A6) " +
+                "values(CURRENT_TIMESTAMP, @templateIdValue, @empIdValue, @mgrIdValue, " +
+                "@firstAnswerValue, @secondAnswerValue, @thirdAnswerValue, @fourthAnswerValue, @fifthAnswerValue, @sixthAnswerValue); " +
+                "SELECT LAST_INSERT_ID();";
+
+            MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+            MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+            sqlCommand.Parameters.AddWithValue("@templateIdValue", HttpUtility.UrlDecode(templateId));
+            sqlCommand.Parameters.AddWithValue("@empIdValue", HttpUtility.UrlDecode(empId));
+            sqlCommand.Parameters.AddWithValue("@mgrIdValue", HttpUtility.UrlDecode(mgrId));
+            sqlCommand.Parameters.AddWithValue("@firstAnswerValue", HttpUtility.UrlDecode(firstAnswer));
+            sqlCommand.Parameters.AddWithValue("@secondAnswerValue", HttpUtility.UrlDecode(secondAnswer));
+            sqlCommand.Parameters.AddWithValue("@thirdAnswerValue", HttpUtility.UrlDecode(thirdAnswer));
+            sqlCommand.Parameters.AddWithValue("@fourthAnswerValue", HttpUtility.UrlDecode(fourthAnswer));
+            sqlCommand.Parameters.AddWithValue("@fifthAnswerValue", HttpUtility.UrlDecode(fifthAnswer));
+            sqlCommand.Parameters.AddWithValue("@sixthAnswerValue", HttpUtility.UrlDecode(sixthAnswer));
+
+            //this time, we're not using a data adapter to fill a data table.  We're just
+            //opening the connection, telling our command to "executescalar" which says basically
+            //execute the query and just hand me back the number the query returns (the ID, remember?).
+            //don't forget to close the connection!
+            sqlConnection.Open();
+            //we're using a try/catch so that if the query errors out we can handle it gracefully
+            //by closing the connection and moving on
+            try
+            {
+                int meetingId = Convert.ToInt32(sqlCommand.ExecuteScalar());
+                //here, you could use this postID for additional queries regarding
+                //the requested post.  Really this is just an example to show you
+                //a query where you get the primary key of the inserted row back from
+                //the database!
+            }
+            catch (Exception e)
+            {
+            }
+            sqlConnection.Close();
+        }
+
+        [WebMethod(EnableSession = true)]
+        public void NewOneOnOneTemplate(string firstQuestion, string secondQuestion, string thirdQuestion, string fourthQuestion, string fifthQuestion, string sixthQuestion)
+        {
+            if (Convert.ToInt32(Session["Admin"]) == 1)
+            {
+                string sqlConnectString = getConString();
+                //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
+                //does is tell mySql server to return the primary key of the last inserted row.
+                string sqlSelect = "insert into MeetingTemplate (Q1, Q2, Q3, Q4, Q5, Q6) " +
+                    "values (@firstQuestionValue, @secondQuestionValue, @thirdQuestionValue, @fourthQuestionValue, @fifthQuestionValue, @sixthQuestionValue); " +
+                    "SELECT LAST_INSERT_ID();";
+
+                MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+                MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+                sqlCommand.Parameters.AddWithValue("@firstQuestionValue", HttpUtility.UrlDecode(firstQuestion));
+                sqlCommand.Parameters.AddWithValue("@secondQuestionValue", HttpUtility.UrlDecode(secondQuestion));
+                sqlCommand.Parameters.AddWithValue("@thirdQuestionValue", HttpUtility.UrlDecode(thirdQuestion));
+                sqlCommand.Parameters.AddWithValue("@fourthQuestionValue", HttpUtility.UrlDecode(fourthQuestion));
+                sqlCommand.Parameters.AddWithValue("@fifthQuestionValue", HttpUtility.UrlDecode(fifthQuestion));
+                sqlCommand.Parameters.AddWithValue("@sixthQuestionValue", HttpUtility.UrlDecode(sixthQuestion));
+
+                //this time, we're not using a data adapter to fill a data table.  We're just
+                //opening the connection, telling our command to "executescalar" which says basically
+                //execute the query and just hand me back the number the query returns (the ID, remember?).
+                //don't forget to close the connection!
+                sqlConnection.Open();
+                //we're using a try/catch so that if the query errors out we can handle it gracefully
+                //by closing the connection and moving on
+                try
+                {
+                    int meetingId = Convert.ToInt32(sqlCommand.ExecuteScalar());
+                    //here, you could use this postID for additional queries regarding
+                    //the requested post.  Really this is just an example to show you
+                    //a query where you get the primary key of the inserted row back from
+                    //the database!
+                }
+                catch (Exception e)
+                {
+                }
+                sqlConnection.Close();
+
+            }
+        }
     }
 }
