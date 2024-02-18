@@ -519,7 +519,7 @@ function initiateOneOnOne(directReportId) {
 function submitMeetingDetails() {
 
 	// The URL of the web service for submitting suggestions
-	var webMethod = "ProjectServices.asmx/NewMeeting";
+	var webMethod = "ProjectServices.asmx/NewOneOnOneAnswers";
 
 	// Get form values
 	var templateID = 1; // hard coded for now, ultimately manager may select from multiple templates
@@ -532,8 +532,9 @@ function submitMeetingDetails() {
 	var meetingA5 = $('#meetingA5').val();
 	var meetingA6 = $('#meetingA6').val();
 
-	var parameters = "{\"templateID\":\"" + encodeURI(templateID) + "\",\"empID\":\"" + encodeURI(meetingEmpID) + "\",\"mgrID\":\"" + encodeURI(meetingMgrID) + "\",\"a1\":\"" + encodeURI(meetingA1)
-						+ "\",\"a2\":\"" + encodeURI(meetingA2) + "\",\"a3\":\"" + encodeURI(meetingA3) + "\",\"a4\":\"" + encodeURI(meetingA4) + "\",\"a5\":\"" + encodeURI(meetingA5) + "\",\"a6\":\"" + encodeURI(meetingA6) + "\"}";
+	var parameters = "{\"templateId\":\"" + encodeURI(templateID) + "\",\"empId\":\"" + encodeURI(meetingEmpID) + "\",\"mgrId\":\"" + encodeURI(meetingMgrID) + "\",\"firstAnswer\":\"" + encodeURI(meetingA1)
+					+ "\",\"secondAnswer\":\"" + encodeURI(meetingA2) + "\",\"thirdAnswer\":\"" + encodeURI(meetingA3) + "\",\"fourthAnswer\":\"" + encodeURI(meetingA4) + "\",\"fifthAnswer\":\""
+					+ encodeURI(meetingA5) + "\",\"sixthAnswer\":\"" + encodeURI(meetingA6) + "\"}";
 	console.log(parameters);
 
 	$.ajax({
@@ -543,9 +544,8 @@ function submitMeetingDetails() {
 		contentType: "application/json; charset=utf-8",
 		dataType: "json",
 		success: function (msg) {
-			alert("1-on-1 meeting details submitted successfully.");
-			clearMeeting();
-			showPanel('homeDisplayPanel');
+			clearMeeting();	// clear meeting form inputs
+			updateHomeDisplay() // update home display to refresh list fo previous 1on1 meetings
 		},
 		error: function (e) {
 			alert("Failed to submit 1-on-1 meeting details. Please try again.");
