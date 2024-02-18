@@ -255,9 +255,9 @@ function toggleHamburgerMenu() {
 	}
 }
 
-// On the navigation system is icon to access user profile. Currently just alerts that link was clicked
+// On the navigation system is icon to access user profile. Currently no action is taken.
 function openUserProfile() {
-	alert("User profile clicked!");
+	
 }
 
 function updateHomeDisplay() {
