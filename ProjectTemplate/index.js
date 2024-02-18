@@ -7,7 +7,7 @@ var currentManager;
 var directReports = [];
 var allSuggestions = [];
 var allEmployees = [];
-
+var allMeetings = [];
 // On load call function to show logon panel
 $(document).ready(function () {
 	showPanel("logonPanel")
@@ -69,6 +69,7 @@ function clearUserData() {
 	directReports = [];
 	allSuggestions = [];
 	allEmployees = [];
+	allMeetings = [];
 }
 
 // Allows for cancel of a new meeting form. Calls function to clear inputs and returns user to home screen
@@ -260,37 +261,39 @@ function openUserProfile() {
 	
 }
 
+// Home screen display user details, manager (if avaialble), and direct reports (if available)
 function updateHomeDisplay() {
-	// Clear previous information
-	$("#myInfo").empty();
-	$("#managerInfo").empty();
-	$("#directReportsInfo").empty().append('<h3>Direct Reports</h3>');
+	$("#userInfoHtml").empty();
+	var userInfoHtml = `
+        <div class="userInfoCard">
+            <h3>My Profile</h3>
+            <p><strong>${currentEmployee.empFirstName} ${currentEmployee.empLastName}</strong><br>
+            ${currentEmployee.empDepartment}</p>
+        </div>
+    `;
 
-	// Load and display current user's information
-	$("#myInfo").html(`<strong>Me:</strong> ${currentEmployee.empFirstName} ${currentEmployee.empLastName} - ${currentEmployee.empDepartment}`);
-
-	// Load and display manager's information, if available
 	if (currentManager) {
-		$("#managerInfo").html(`<strong>Manager:</strong> ${currentManager.empFirstName} ${currentManager.empLastName} - ${currentManager.empDepartment}`);
-	} else {
-		$("#managerInfo").html('<strong>Manager:</strong> None');
+		userInfoHtml += `
+            <div class="userInfoCard">
+                <h3>My Manager</h3>
+                <p><strong>${currentManager.empFirstName} ${currentManager.empLastName}</strong><br>
+                ${currentManager.empDepartment}</p>
+            </div>
+        `;
 	}
 
-	// Load and display direct reports, if any
+	// Direct reports will link to trigger a 1-on-1 meeting
 	if (directReports && directReports.length > 0) {
-		let directReportsHtml = directReports.map(dr => `
-            <div>
-                <a href="#" onclick="initiateOneOnOne(${dr.empId}); return false;">
-                    ${dr.empFirstName} ${dr.empLastName}
-                </a> - ${dr.empDepartment}
-            </div>
-        `).join('');
-		$("#directReportsInfo").append(directReportsHtml);
-		// Adding instructional text at the bottom
-		$("#directReportsInfo").append('<div style="margin-top: 10px;"><em>Click on a name to initiate a 1-on-1 meeting.</em></div>');
-	} else {
-		$("#directReportsInfo").append('<div>No direct reports</div>');
+		userInfoHtml += `<div class="userInfoCard"><h3>Direct Reports</h3><ul>`;
+		directReports.forEach(function (report) {
+			userInfoHtml += `<li><a href="#" onclick="initiateOneOnOne(${report.empId});">${report.empFirstName} ${report.empLastName}</a> - ${report.empDepartment}</li>`;
+		});
+		userInfoHtml += `</ul><p>Click on a name to host a 1-on-1 meeting.</p></div>`;
 	}
+
+	$("#userInfoHtml").html(userInfoHtml);
+
+	loadMeetingHistory();
 
 	// Show the Home Display Panel
 	showPanel('homeDisplayPanel');
@@ -551,4 +554,55 @@ function submitMeetingDetails() {
 			alert("Failed to submit 1-on-1 meeting details. Please try again.");
 		}
 	});
+}
+
+// Load 1on1 meeting history table on homepanel
+function loadMeetingHistory() {
+
+	var webMethod = "ProjectServices.asmx/GetMeetings";
+	$.ajax({
+		type: "POST",
+		url: webMethod,
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success: function (msg) {
+			$("#meetingHistory").empty(); // Clear previous content regardless of outcome
+			if (msg.d && msg.d.length > 0) {
+				var meetingsHtml = `
+                    <div class="meetingsContainer">
+                        <h3>1-on-1 Meeting History</h3>
+                        <ul class="meetingsList">
+                `;
+				// Add list item for each meeting
+				for (var i = 0; i < msg.d.length; i++) {
+					var meeting = msg.d[i];
+					meetingsHtml += `
+                        <li><a href="#" onclick="loadMeetingDetails(${meeting.meetingId});">${meeting.date}</a> - ${meeting.empFirstName} ${meeting.empLastName} & ${meeting.mgrFirstName} ${meeting.mgrLastName}</li>
+                    `;
+				}
+				meetingsHtml += `
+                        </ul>
+                    </div>
+                `;
+				// Append meeting list to home panel
+				$("#meetingHistory").append(meetingsHtml);
+			} else {
+				// Display message when no meeting history is found
+				$("#meetingHistory").html(`
+                    <div class="meetingsContainer">
+                        <h3>1-on-1 Meeting History</h3>
+                        <p>No meeting history found.</p>
+                    </div>
+                `);
+			}
+		},
+		error: function (e) {
+			alert("boo...");
+		}
+	});
+}
+
+// Display meeting details
+function loadMeetingDetails(meetingId) {
+	
 }

@@ -158,4 +158,66 @@ button {
     font-size: 24px;
 }
 
+.meetingsContainer {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-top: 20px;
+}
 
+    .meetingsContainer h3 {
+        margin-top: 0;
+    }
+
+.meetingsList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .meetingsList li {
+        border-bottom: 1px solid #eee;
+        padding: 8px 0;
+    }
+
+        .meetingsList li a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+            .meetingsList li a:hover {
+                text-decoration: underline;
+            }
+
+.userInfoCard {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+    .userInfoCard h3 {
+        margin-top: 0;
+    }
+
+    .userInfoCard p {
+        line-height: 1.4;
+    }
+
+    .userInfoCard a {
+        color: #007bff;
+        text-decoration: none;
+    }
+        .userInfoCard a:hover {
+            text-decoration: underline;
+         }
+
+    .userInfoCard ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .userInfoCard li {
+        margin-bottom: 5px;
+    }

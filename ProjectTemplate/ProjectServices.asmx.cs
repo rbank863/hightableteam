@@ -680,13 +680,15 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("meetings");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select MeetingID, Date, TemplateID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, " +
-                    "Titles.Title, ifNull(Meetings.ManagerID,0) as ManagerID, A1, A2, A3, A4, A5, A6 " +
+                string sqlSelect = "select MeetingID, Date, EMP.EmpFName, EMP.EmpLName, Titles.Title, Departments.Dept, Meetings.ManagerID, " +
+                    "MGR.EmpFName as MgrFName, MGR.EmpLName as MgrLName, A1, A2, A3, A4, A5, A6, Q1, Q2, Q3, Q4, Q5, Q6 " +
                     "FROM Meetings " +
-                    "INNER JOIN Employees ON Meetings.EmpID=Employees.EmpID " +
-                    "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
-                    "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
-                    "WHERE Meetings.EmpID=@empIdValue " +
+                    "INNER JOIN Employees as EMP ON Meetings.EmpID=EMP.EmpID " +
+                    "INNER JOIN Employees as MGR ON Meetings.ManagerID=MGR.EmpID " +
+                    "INNER JOIN Departments ON EMP.DeptID=Departments.DeptID " +
+                    "INNER JOIN Titles ON EMP.TitleID=Titles.TitleID " +
+                    "INNER JOIN MeetingTemplate on MeetingTemplate.TemplateID=Meetings.TemplateID " +
+                    "WHERE Meetings.EmpID=@empIdValue or  Meetings.ManagerID=@empIdValue " +
                     "ORDER BY Date;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
@@ -708,19 +710,27 @@ namespace ProjectTemplate
                     allMeetings.Add(new Meeting
                     {
                         meetingId = Convert.ToInt32(sqlDt.Rows[i]["MeetingID"]),
+                        date = Convert.ToDateTime(sqlDt.Rows[i]["Date"]).ToString("M/d/yyyy"),
                         empId = Convert.ToInt32(Session["EmpID"]),
-                        templateId = Convert.ToInt32(sqlDt.Rows[i]["TemplateID"]),
                         empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
                         empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
                         empDepartment = sqlDt.Rows[i]["Dept"].ToString(),
                         empTitle = sqlDt.Rows[i]["Title"].ToString(),
                         empMgrId = Convert.ToInt32(sqlDt.Rows[i]["ManagerID"]),
+                        mgrFirstName = sqlDt.Rows[i]["MgrFName"].ToString(),
+                        mgrLastName = sqlDt.Rows[i]["MgrLName"].ToString(),
                         answerOne = sqlDt.Rows[i]["A1"].ToString(),
                         answerTwo = sqlDt.Rows[i]["A2"].ToString(),
                         answerThree = sqlDt.Rows[i]["A3"].ToString(),
                         answerFour = sqlDt.Rows[i]["A4"].ToString(),
                         answerFive = sqlDt.Rows[i]["A5"].ToString(),
                         answerSix = sqlDt.Rows[i]["A6"].ToString(),
+                        questionOne = sqlDt.Rows[i]["Q1"].ToString(),
+                        questionTwo = sqlDt.Rows[i]["Q2"].ToString(),
+                        questionThree = sqlDt.Rows[i]["Q3"].ToString(),
+                        questionFour = sqlDt.Rows[i]["Q4"].ToString(),
+                        questionFive = sqlDt.Rows[i]["Q5"].ToString(),
+                        questionSix = sqlDt.Rows[i]["Q6"].ToString(),
 
                     });
                 }
