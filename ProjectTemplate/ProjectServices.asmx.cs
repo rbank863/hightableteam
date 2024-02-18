@@ -665,5 +665,74 @@ namespace ProjectTemplate
 
             }
         }
+        [WebMethod(EnableSession = true)]
+        public Meeting[] GetMeetings()
+        {
+            //check out the return type.  It's an array of Meeting objects.  You can look at our custom Meeting class in this solution to see that it's 
+            //just a container for public class-level variables.  It's a simple container that asp.net will have no trouble converting into json.  When we return
+            //sets of information, it's a good idea to create a custom container class to represent instances (or rows) of that information, and then return an array of those objects.  
+            //Keeps everything simple.
+
+            //WE ONLY SHARE DATA WITH LOGGED IN USERS!
+            if (Session["UserID"] != null)
+            {
+
+                DataTable sqlDt = new DataTable("meetings");
+
+                string sqlConnectString = getConString();
+                string sqlSelect = "select MeetingID, Date, TemplateID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, " +
+                    "Titles.Title, ifNull(Meetings.ManagerID,0) as ManagerID, A1, A2, A3, A4, A5, A6 " +
+                    "FROM Meetings " +
+                    "INNER JOIN Employees ON Meetings.EmpID=Employees.EmpID " +
+                    "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
+                    "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
+                    "WHERE Meetings.EmpID=@empIdValue " +
+                    "ORDER BY Date;";
+
+                MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
+                MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
+
+                sqlCommand.Parameters.AddWithValue("@empIdValue", Convert.ToInt32(Session["EmpID"]));
+
+                //gonna use this to fill a data table
+                MySqlDataAdapter sqlDa = new MySqlDataAdapter(sqlCommand);
+                //filling the data table
+                sqlDa.Fill(sqlDt);
+
+                //loop through each row in the dataset, creating instances
+                //of our container class Comment.  Fill each object with
+                //data from the rows, then dump them in a list.
+                List<Meeting> allMeetings = new List<Meeting>();
+                for (int i = 0; i < sqlDt.Rows.Count; i++)
+                {
+                    allMeetings.Add(new Meeting
+                    {
+                        meetingId = Convert.ToInt32(sqlDt.Rows[i]["MeetingID"]),
+                        empId = Convert.ToInt32(Session["EmpID"]),
+                        templateId = Convert.ToInt32(sqlDt.Rows[i]["TemplateID"]),
+                        empFirstName = sqlDt.Rows[i]["EmpFName"].ToString(),
+                        empLastName = sqlDt.Rows[i]["EmpLName"].ToString(),
+                        empDepartment = sqlDt.Rows[i]["Dept"].ToString(),
+                        empTitle = sqlDt.Rows[i]["Title"].ToString(),
+                        empMgrId = Convert.ToInt32(sqlDt.Rows[i]["ManagerID"]),
+                        answerOne = sqlDt.Rows[i]["A1"].ToString(),
+                        answerTwo = sqlDt.Rows[i]["A2"].ToString(),
+                        answerThree = sqlDt.Rows[i]["A3"].ToString(),
+                        answerFour = sqlDt.Rows[i]["A4"].ToString(),
+                        answerFive = sqlDt.Rows[i]["A5"].ToString(),
+                        answerSix = sqlDt.Rows[i]["A6"].ToString(),
+
+                    });
+                }
+                //convert the list of suggestions to an array and return!
+                return allMeetings.ToArray();
+            }
+            else
+            {
+                //if they're not logged in, return an empty array
+                return new Meeting[0];
+            }
+        }
+
     }
 }
