@@ -13,7 +13,7 @@ $(document).ready(function () {
 	showPanel("logonPanel")
 });
 
-var contentPanels = ['logonPanel', 'homeDisplayPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel', 'meetingPanel'];
+var contentPanels = ['logonPanel', 'homeDisplayPanel', 'suggestionPanel', 'suggestionDisplayPanel', 'suggestionDetailsPanel', 'meetingPanel', 'meetingDetailsPanel'];
 // Function to manage active content panel. 
 function showPanel(panelId) {
 	// Iterate through all content panels
@@ -568,14 +568,15 @@ function loadMeetingHistory() {
 		success: function (msg) {
 			$("#meetingHistory").empty(); // Clear previous content regardless of outcome
 			if (msg.d && msg.d.length > 0) {
+				allMeetings = msg.d.reverse();
 				var meetingsHtml = `
                     <div class="meetingsContainer">
                         <h3>1-on-1 Meeting History</h3>
                         <ul class="meetingsList">
                 `;
 				// Add list item for each meeting
-				for (var i = 0; i < msg.d.length; i++) {
-					var meeting = msg.d[i];
+				for (var i = 0; i < allMeetings.length; i++) {
+					var meeting = allMeetings[i];
 					meetingsHtml += `
                         <li><a href="#" onclick="loadMeetingDetails(${meeting.meetingId});">${meeting.date}</a> - ${meeting.empFirstName} ${meeting.empLastName} & ${meeting.mgrFirstName} ${meeting.mgrLastName}</li>
                     `;
@@ -603,6 +604,29 @@ function loadMeetingHistory() {
 }
 
 // Display meeting details
-function loadMeetingDetails(meetingId) {
-	
+function loadMeetingDetails(meetingID) {
+	var meeting = allMeetings.find(m => m.meetingId === meetingID);
+	if (meeting) {
+		// Populate employee and manager details
+		$('#meetingEmployee').text(`${meeting.empFirstName} ${meeting.empLastName}`);
+		$('#meetingDept').text(meeting.empDepartment);
+		$('#meetingManager').text(`${meeting.mgrFirstName} ${meeting.mgrLastName}`);
+		$('#meetingDate').text(meeting.date);
+
+		// Populate the meeting Q/A details
+		$('#question1').html(`<strong>${meeting.questionOne}</strong>`);
+		$('#answer1').text(meeting.answerOne);
+		$('#question2').html(`<strong>${meeting.questionTwo}</strong>`);
+		$('#answer2').text(meeting.answerTwo);
+		$('#question3').html(`<strong>${meeting.questionThree}</strong>`);
+		$('#answer3').text(meeting.answerThree);
+		$('#question4').html(`<strong>${meeting.questionFour}</strong>`);
+		$('#answer4').text(meeting.answerFour);
+		$('#question5').html(`<strong>${meeting.questionFive}</strong>`);
+		$('#answer5').text(meeting.answerFive);
+		$('#question6').html(`<strong>${meeting.questionSix}</strong>`);
+		$('#answer6').text(meeting.answerSix);
+	} 
+
+	showPanel('meetingDetailsPanel');
 }

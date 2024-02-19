@@ -131,6 +131,7 @@
 		<!-- New Content Panel for Suggestion Details and Comment Form -->
 		<div id="suggestionDetailsPanel" class="contentPanel suggestionDetailsPanel">
 			<h2>Discussion</h2>
+			<a href="#" onclick="showPanel('suggestionDisplayPanel');; return false;">Go Back</a><p></p>
 			<div id="suggestionDetails">
 				<!-- Dynamic content -->
 			</div>
@@ -198,6 +199,39 @@
 					<button type="button" onclick="cancelMeeting()">Cancel</button>
 				</div>
 			</form>
+		</div>
+
+		<!-- 1-on-1 Meeting Panel for Displaying Details -->
+		<div id="meetingDetailsPanel" class="contentPanel meetingDetailsPanel">
+			<h2>1-on-1 Meeting Details</h2>
+			<a href="#" onclick="showPanel('homeDisplayPanel');; return false;">Go Back</a>
+			<p>Employee: <span id="meetingEmployee"></span>, <span id="meetingDept"></span></p>
+			<p>Manager: <span id="meetingManager"></span></p>
+			<p>Date: <span id="meetingDate"></span></p>
+			<div class="form-group">
+				<p id="question1"></p>
+				<p id="answer1"></p>
+			</div>
+			<div class="form-group">
+				<p id="question2"></p>
+				<p id="answer2"></p>
+			</div>
+			<div class="form-group">
+				<p id="question3"></p>
+				<p id="answer3"></p>
+			</div>
+			<div class="form-group">
+				<p id="question4"></p>
+				<p id="answer4"></p>
+			</div>
+			<div class="form-group">
+				<p id="question5"></p>
+				<p id="answer5"></p>
+			</div>
+			<div class="form-group">
+				<p id="question6"></p>
+				<p id="answer6"></p>
+			</div>
 		</div>
 	</div>
 </body>
