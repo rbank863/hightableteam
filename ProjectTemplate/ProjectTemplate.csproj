@@ -94,7 +94,7 @@
     <Content Include="Global.asax" />
     <Content Include="index.html" />
     <Content Include="index.js" />
-    <Content Include="logo_header.svg" />
+    <Content Include="logo_header.png" />
     <Content Include="ProjectServices.asmx" />
     <Content Include="styles.css" />
     <Content Include="Web.config" />
