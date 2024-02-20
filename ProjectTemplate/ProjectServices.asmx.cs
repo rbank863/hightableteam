@@ -134,7 +134,7 @@ namespace ProjectTemplate
             //the only thing fancy about this query is SELECT LAST_INSERT_ID() at the end.  All that
             //does is tell mySql server to return the primary key of the last inserted row.
             string sqlSelect = "insert into Employees (EmpFName, EmpLName, DeptID, TitleID, ManagerID) " +
-                "values(@fnameValue, @lnameValue, @deptValue, @titleValue, @managerValue);" +
+                "values(@fnameValue, @lnameValue, @deptValue, @titleValue, @managerValue); " +
                 "insert into Users (LoginID, LoginPass, EmpID, Admin) " +
                 "values(@idValue, @passValue, (SELECT EmpID from Employees WHERE EmpFName=@fnameValue AND EmpLName=@lnameValue), @adminValue); " +
                 "SELECT LAST_INSERT_ID();";
@@ -160,7 +160,7 @@ namespace ProjectTemplate
             //by closing the connection and moving on
             try
             {
-                int empID = Convert.ToInt32(sqlCommand.ExecuteScalar());
+                int empId = Convert.ToInt32(sqlCommand.ExecuteScalar());
                 //here, you could use this empID for additional queries regarding
                 //the requested employee.  Really this is just an example to show you
                 //a query where you get the primary key of the inserted row back from
