@@ -1,7 +1,7 @@
 "use strict";
 
 // Global Variables
-var userID;
+var empID;
 var currentEmployee;
 var currentManager;
 var directReports = [];
@@ -63,7 +63,7 @@ function clearMeeting() {
 
 // Reset global variables
 function clearUserData() {
-	userID = undefined;
+	empID = undefined;
 	currentEmployee = undefined;
 	currentManager = undefined;
 	directReports = [];
@@ -143,8 +143,8 @@ function getUser() {
 		dataType: "json",
 		success: function (msg) {
 			if (msg.d) {
-				userID = parseInt(msg.d);
-				getEmployees(userID);
+				empID = parseInt(msg.d);
+				getEmployees(empID);
 			}
 			else {
 				console.log('Something went wrong');
@@ -171,20 +171,22 @@ function getEmployees(id) {
 
 				// Find the logged in user in allEmployees
 				currentEmployee = allEmployees.find(function (employee) {
-					return employee.empId === id;
+					return employee.empUserId === id;
 				});
+
+				console.log(currentEmployee);
 
 				// Check if the logged in user has a manager
 				if (currentEmployee.empManager && currentEmployee.empManager !== 0) {
 					// Find the manager in allEmployees
 					currentManager = allEmployees.find(function (manager) {
-						return manager.empId === currentEmployee.empManager;
+						return manager.empUserId === currentEmployee.empManager;
 					});
 				}
 
 				// Find all direct reports to current user
 				directReports = allEmployees.filter(function (employee) {
-					return employee.empManager === currentEmployee.empId;
+					return employee.empManager === currentEmployee.empUserId;
 				});
 
 				updateHomeDisplay();
