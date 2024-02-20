@@ -460,11 +460,14 @@ namespace ProjectTemplate
                 DataTable sqlDt = new DataTable("directReports");
 
                 string sqlConnectString = getConString();
-                string sqlSelect = "select Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Titles.Title, Employees.ManagerID " +
+                string sqlSelect = "select Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Titles.Title, Employees.ManagerID, Users.UserID, " +
+                    "MGR.EmpFName as MgrFName, MGR.EmpLName as MgrLName " +
                     "FROM Employees " +
+                    "INNER JOIN Employees as MGR ON Employees.ManagerID=MGR.EmpID " +
                     "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
                     "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
-                    "WHERE ManagerID=@empIdValue AND IsDeleted=0;";
+                    "INNER JOIN Users ON Employees.EmpID=Users.EmpID " +
+                    "WHERE Employees.ManagerID=@empIdValue AND Employees.IsDeleted=0;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
@@ -491,6 +494,9 @@ namespace ProjectTemplate
                         empDepartment = sqlDt.Rows[i]["Dept"].ToString(),
                         empTitle = sqlDt.Rows[i]["Title"].ToString(),
                         empManager = Convert.ToInt32(sqlDt.Rows[i]["ManagerID"]),
+                        mgrFirstName = sqlDt.Rows[i]["MgrFName"].ToString(),
+                        mgrLastName = sqlDt.Rows[i]["MgrLName"].ToString(),
+                        empUserId = Convert.ToInt32(sqlDt.Rows[i]["UserID"]),
                     });
                 }
                 //convert the list of suggestions to an array and return!
@@ -523,7 +529,7 @@ namespace ProjectTemplate
                     "INNER JOIN Departments ON Employees.DeptID=Departments.DeptID " +
                     "INNER JOIN Titles ON Employees.TitleID=Titles.TitleID " +
                     "INNER JOIN Users ON Employees.EmpID=Users.EmpID " +
-                    "WHERE IsDeleted=0 " +
+                    "WHERE Employees.IsDeleted=0 " +
                     "ORDER BY EmpFName;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
