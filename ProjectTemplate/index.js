@@ -186,8 +186,10 @@ function getEmployees(id) {
 
 				// Find all direct reports to current user
 				directReports = allEmployees.filter(function (employee) {
-					return employee.empManager === currentEmployee.empUserId;
+					return employee.empManager === currentEmployee.empId;
 				});
+
+				console.log(directReports);
 
 				updateHomeDisplay();
 			}
@@ -506,7 +508,7 @@ function postReply() {
 
 function initiateOneOnOne(directReportId) {
 	// Set the IDs in the hidden fields
-	$('#meetingMgrID').val(userID);
+	$('#meetingMgrID').val(empID);
 	$('#meetingEmpID').val(directReportId);
 
 	var managerName = currentEmployee.empFirstName + " " + currentEmployee.empLastName;
