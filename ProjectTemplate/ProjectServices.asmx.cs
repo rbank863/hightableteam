@@ -285,7 +285,8 @@ namespace ProjectTemplate
                 string sqlSelect = "select Posts.PostID, Employees.EmpID, Employees.EmpFName, Employees.EmpLName, Departments.Dept, Posts.Post, Posts.ProposedSolution, " + 
                     "Posts.Date, Posts.Likes, Posts.Anon, Posts.CheckboxData " +
                     "FROM Posts INNER JOIN Employees ON Posts.EmpID=Employees.EmpID " +
-                    "INNER JOIN Departments ON Employees.DeptID = Departments.DeptID;";
+                    "INNER JOIN Departments ON Employees.DeptID = Departments.DeptID " +
+                    "ORDER BY Date;";
 
                 MySqlConnection sqlConnection = new MySqlConnection(sqlConnectString);
                 MySqlCommand sqlCommand = new MySqlCommand(sqlSelect, sqlConnection);
