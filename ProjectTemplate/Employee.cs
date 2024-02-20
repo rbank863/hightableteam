@@ -15,6 +15,7 @@ namespace ProjectTemplate
         public string empDepartment;
         public string empTitle;
         public int empManager;
+        public int empUserId;
 
     }
 }
