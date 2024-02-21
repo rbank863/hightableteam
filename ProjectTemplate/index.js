@@ -177,13 +177,11 @@ function getEmployees(id) {
 					return employee.empUserId === id;
 				});
 
-				console.log(currentEmployee);
-
 				// Check if the logged in user has a manager
 				if (currentEmployee.empManager && currentEmployee.empManager !== 0) {
 					// Find the manager in allEmployees
 					currentManager = allEmployees.find(function (manager) {
-						return manager.empUserId === currentEmployee.empManager;
+						return manager.empId === currentEmployee.empManager;
 					});
 				}
 
@@ -191,8 +189,6 @@ function getEmployees(id) {
 				directReports = allEmployees.filter(function (employee) {
 					return employee.empManager === currentEmployee.empId;
 				});
-
-				console.log(directReports);
 
 				updateHomeDisplay();
 			}
