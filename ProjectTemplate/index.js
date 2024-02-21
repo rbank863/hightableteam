@@ -8,6 +8,8 @@ var directReports = [];
 var allSuggestions = [];
 var allEmployees = [];
 var allMeetings = [];
+var filterMode = 'department';
+
 // On load call function to show logon panel
 $(document).ready(function () {
 	showPanel("logonPanel")
@@ -70,6 +72,7 @@ function clearUserData() {
 	allSuggestions = [];
 	allEmployees = [];
 	allMeetings = [];
+	filterMode = 'department';
 }
 
 // Allows for cancel of a new meeting form. Calls function to clear inputs and returns user to home screen
@@ -272,7 +275,8 @@ function updateHomeDisplay() {
         <div class="userInfoCard">
             <h3>My Profile</h3>
             <p><strong>${currentEmployee.empFirstName} ${currentEmployee.empLastName}</strong><br>
-            ${currentEmployee.empDepartment}</p>
+            ${currentEmployee.empTitle}<br>
+			${currentEmployee.empDepartment}</p>
         </div>
     `;
 
@@ -281,7 +285,8 @@ function updateHomeDisplay() {
             <div class="userInfoCard">
                 <h3>My Manager</h3>
                 <p><strong>${currentManager.empFirstName} ${currentManager.empLastName}</strong><br>
-                ${currentManager.empDepartment}</p>
+                ${currentManager.empTitle}<br>
+				${currentManager.empDepartment}</p>
             </div>
         `;
 	}
@@ -324,9 +329,19 @@ function loadSuggestions() {
 				// Store suggestions globally, in reverse order newest on top
 				allSuggestions = msg.d.reverse();
 
-				// Use a for loop to iterate over the suggestions array
-				for (var i = 0; i < allSuggestions.length; i++) {
-					var suggestion = allSuggestions[i];
+				// Filter suggestions if filterMode is 'department'
+				var filteredSuggestions;
+				if (filterMode === 'department') {
+					filteredSuggestions = allSuggestions.filter(function (suggestion) {
+						return suggestion.dept === currentEmployee.empDepartment;
+					});
+				} else {
+					filteredSuggestions = allSuggestions;
+				}
+				
+				// Use a for loop to iterate over the filtered suggestions array
+				for (var i = 0; i < filteredSuggestions.length; i++) {
+					var suggestion = filteredSuggestions[i];
 					// Modify display name and department if the suggestion is annonymous or not
 					var displayName = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Name:</strong> ${suggestion.empFirstName + ' ' + suggestion.empLastName}</div>`;
 					var displayDepartment = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Department:</strong> ${suggestion.dept}</div>`;
@@ -340,7 +355,7 @@ function loadSuggestions() {
 					// Format the details of the current suggestion and append it to the suggestionsContainer div as part of the suggestionDisplayPanel
 					var suggestionHtml = `
 						<div class="suggestionDisplayBox">
-							<div class="suggestionDetail"><strong><a href="#" onclick="displaySuggestionDetails('${i}'); return false;">#${suggestion.postId}</a></strong>  ${suggestion.date}</div>
+							<div class="suggestionDetail"><strong><a href="#" onclick="displaySuggestionDetails('${suggestion.postId}'); return false;">#${suggestion.postId}</a></strong>  ${suggestion.date}</div>
 							${displayName}
 							${displayDepartment}
 							<div class="suggestionDetail"><strong>Suggestion:</strong> ${suggestion.post}</div>
@@ -365,13 +380,16 @@ function loadSuggestions() {
 }
 
 // This function will dive into a single suggestion. Display the suggestion details and pass along the current post ID to displaySuggestionComments function
-function displaySuggestionDetails(index) {
+function displaySuggestionDetails(postID) {
 
 	// Empty container
 	$("#suggestionDetails").empty();
-
+	
 	// Get the current suggestion based on the index passed into the function. Modify display name and department if the suggestion is annonymous or not
-	var suggestion = allSuggestions[index];
+	//var suggestion = allSuggestions[index];
+	var suggestion = allSuggestions.find(function (idea) {
+		return idea.postId === parseInt(postID,10);
+	});
 	var displayName = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Name:</strong> ${suggestion.empFirstName + ' ' + suggestion.empLastName}</div>`;
 	var displayDepartment = suggestion.anon === 'true' ? '' : `<div class="suggestionDetail"><strong>Department:</strong> ${suggestion.dept}</div>`;
 
@@ -633,4 +651,14 @@ function loadMeetingDetails(meetingID) {
 	} 
 
 	showPanel('meetingDetailsPanel');
+}
+
+function toggleFilterMode() {
+	var isChecked = $("#departmentToggle").is(":checked");
+
+	filterMode = isChecked ? 'all' : 'department';
+	$("#toggleLabel").text(filterMode === 'all' ? "Company Wide" : "My Department");
+
+	// Reload suggestions based on the new filter mode
+	loadSuggestions();
 }

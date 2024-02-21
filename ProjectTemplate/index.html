@@ -123,6 +123,18 @@
 		<!--Suggestion Display Panel -->
 		<div id="suggestionDisplayPanel" class="contentPanel suggestionDisplayPanel">
 			<h2>Recent Feedback</h2>
+
+			<!-- Toggle Switch for Filtering Suggestions -->
+			<div class="filter-toggle">
+				<label class="switch">
+					<input type="checkbox" id="departmentToggle" onclick="toggleFilterMode()">
+					<span class="slider round"></span>
+				</label>
+				<span id="toggleLabel">My Department</span>
+			</div><br>
+
+
+
 			<div id="suggestionsContainer">
 				<!-- Dynamic content -->
 			</div>
